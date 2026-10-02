@@ -81,6 +81,15 @@ Signal order on the master mix is **ring → EQ → fold**; the filter runs
 per-voice, before the mix. Ring, EQ and fold are on by default; the filter is
 off until you enable it.
 
+### Load — yours to manage
+
+The Digitone's **CPU and DSP are shared** between the internal FM voices and
+these added effects. Running **everything at once** — ring + EQ + fold **and**
+the filter's **COMB / TRASH** on several voices — **will stress the CPU/DSP**
+and can cause dropouts. Manage it yourself: turn off what you are not using,
+keep the routed filter voices low (the filter is capped at **4 voices**), and
+back off RESO / depth on busy patterns.
+
 ## Verify a download
 
 ```sh
