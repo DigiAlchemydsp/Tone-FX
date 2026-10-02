@@ -1,0 +1,317 @@
+{
+ "elemod": 2,
+ "id": "digieq",
+ "version": "1.0",
+ "title": "Digi EQ",
+ "description": "A master tone tilt: the output split into low and high bands, each with its own gain. A fixed gentle upward tilt by default (DIGIEQ_LOW_D / DIGIEQ_HIGH_D); the knobbed 4-band page reuses this kernel. Combines with every mod.",
+ "category": "Sound",
+ "author": "Digital Alchemy DSP",
+ "license": "GPL-2.0-or-later",
+ "target": {
+  "device": "digitone-mk1",
+  "product": "Digitone mk1",
+  "os": "1.43",
+  "syx_sha256": "c5a54cc05b921f2e4bd814834c5365c2a5aa01d7772a9a2961fac1c3095bf9aa",
+  "section3_sha256": "3831a477a2a22befb23c42e47e782853da49566ef5d0a1767fcf6c30e6767414",
+  "section3_len": 2732208
+ },
+ "sections": {
+  ".run": {
+   "align": 4,
+   "len": 624,
+   "parts": [
+    [
+     "stock",
+     "0x4008e5b4",
+     10
+    ],
+    [
+     "hex",
+     "1aff630a428023c000000000"
+    ],
+    [
+     "stock",
+     "0x40013cba",
+     8
+    ],
+    [
+     "hex",
+     "23c000000000"
+    ],
+    [
+     "stock",
+     "0x400dfa9e",
+     8
+    ],
+    [
+     "hex",
+     "7cfc4ab900000000670001ac2039000000002f4000444ab9000000006700017e2239000000002039000000002639000000002f410048b0af0044670001822f400030242f004494802f4200382239000000002041068180001b00242f004894832f42003c2f410040242f0038ea82222f003cea81d1fc80001a0047e800042f4200382f41003c2439000000002239000000002f43002c2a502a0d9a82e885700e50882453280a9881d4852602e0a3e884284d99c22c0c224a2c43260ce0a3d28493c12e02280928432601e0a3028700003fff028600003fff028400003fff2f4300342609e0a3200e2a01028500003fff508b2243262f00304c0308004c037800262f002c4c0368004c0348002c40200c4c030800262f00342840202f00304c0038004c00580020092f430034262f002c4c030800262f0038d7af00302240700ee0a5e0a7e0a6e0a4daaf0034202f003cde8ede8ddc8cde86da8ad889d1af002c2147fff8da842745fff8b1ef00406600ff26262f0044202f004823c20000000023c30000000023c00000000023c10000"
+    ],
+    [
+     "stock",
+     "0x401347e4",
+     8
+    ],
+    [
+     "hex",
+     "004c4e7520390000000042af0048263900000000b0af00446600fe8c600842af00446000fe5ab6af00486600fe7a4aaf004466064aaf004867c0242f004494802f420038262f00482239000000002041242f0048068180001b0094832f42003c2f410040242f0038ea82222f003cea81d1fc80001a0047e800042f4200382f41003c2439000000002239000000002f4000302f43002c6000fe66000000001770fffff060"
+    ],
+    [
+     "stock",
+     "0x401ab144",
+     8
+    ]
+   ]
+  },
+  ".bss": {
+   "align": 4,
+   "size": 20
+  }
+ },
+ "symbols": {
+  "eq_off": [
+   ".bss",
+   0
+  ],
+  "eq_low_cur": [
+   ".bss",
+   8
+  ],
+  "eq_high_cur": [
+   ".bss",
+   4
+  ],
+  "eq_lo_l": [
+   ".bss",
+   16
+  ],
+  "eq_lo_r": [
+   ".bss",
+   12
+  ],
+  "digieq_render_in": [
+   ".run",
+   0
+  ],
+  "digieq_low_d": [
+   ".run",
+   612
+  ],
+  "digieq_high_d": [
+   ".run",
+   608
+  ],
+  "digieq_high_on": [
+   ".run",
+   616
+  ],
+  "digieq_low_on": [
+   ".run",
+   620
+  ],
+  "digieq_render_out": [
+   ".run",
+   38
+  ]
+ },
+ "exports": [
+  "digieq_high_d",
+  "digieq_high_on",
+  "digieq_low_d",
+  "digieq_low_on",
+  "digieq_render_in",
+  "digieq_render_out"
+ ],
+ "imports": [],
+ "weak": [],
+ "relocs": [
+  [
+   ".run",
+   18,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   32,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   424,
+   "abs32",
+   "sec:.bss",
+   16
+  ],
+  [
+   ".run",
+   430,
+   "abs32",
+   "sec:.bss",
+   8
+  ],
+  [
+   ".run",
+   436,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   442,
+   "abs32",
+   "sec:.bss",
+   12
+  ],
+  [
+   ".run",
+   48,
+   "abs32",
+   "sec:.run",
+   620
+  ],
+  [
+   ".run",
+   58,
+   "abs32",
+   "sec:.run",
+   612
+  ],
+  [
+   ".run",
+   68,
+   "abs32",
+   "sec:.run",
+   616
+  ],
+  [
+   ".run",
+   78,
+   "abs32",
+   "sec:.run",
+   608
+  ],
+  [
+   ".run",
+   84,
+   "abs32",
+   "sec:.bss",
+   8
+  ],
+  [
+   ".run",
+   90,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   122,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   180,
+   "abs32",
+   "sec:.bss",
+   16
+  ],
+  [
+   ".run",
+   186,
+   "abs32",
+   "sec:.bss",
+   12
+  ],
+  [
+   ".run",
+   458,
+   "abs32",
+   "sec:.bss",
+   8
+  ],
+  [
+   ".run",
+   468,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   526,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   584,
+   "abs32",
+   "sec:.bss",
+   16
+  ],
+  [
+   ".run",
+   590,
+   "abs32",
+   "sec:.bss",
+   12
+  ]
+ ],
+ "sites": [],
+ "collections": {},
+ "contribute": [
+  {
+   "to": "ev_render_in",
+   "order": 50,
+   "data": "00000000",
+   "relocs": [
+    [
+     0,
+     "abs32",
+     "sym:digieq_render_in",
+     0
+    ]
+   ],
+   "claims": []
+  },
+  {
+   "to": "ev_render_out",
+   "order": 55,
+   "data": "00000000",
+   "relocs": [
+    [
+     0,
+     "abs32",
+     "sym:digieq_render_out",
+     0
+    ]
+   ],
+   "claims": []
+  }
+ ],
+ "copied": [],
+ "resources": {
+  "names": [
+   "ui:master EQ"
+  ]
+ },
+ "requires": [
+  "core"
+ ],
+ "conflicts": [],
+ "build": {
+  "sources": {
+   "eq.c": "c316542e49056aa04eb3cb3d91903a5d91d0f2f8551abf41b06fb5cdfc96f8ac"
+  }
+ },
+ "signature": null
+}

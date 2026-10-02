@@ -1,0 +1,15 @@
+# Never commit firmware or anything derived from a stock OS.
+*.syx
+*.bin
+*.snap
+*.syx.json
+*.syx.map.json
+
+# Build scratch
+out/
+*.work
+*.o
+
+# OS cruft
+Thumbs.db
+desktop.ini

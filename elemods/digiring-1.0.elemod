@@ -1,0 +1,318 @@
+{
+ "elemod": 2,
+ "id": "digiring",
+ "version": "1.0",
+ "title": "Digi Ring",
+ "description": "A master ring modulator / tremolo: multiplies the output by a sine carrier. 90 Hz at 40% wet by default (a tremolo); set DIGIRING_FREQ_HZ to a higher rate for a metallic ring. Combines with every mod.",
+ "category": "Sound",
+ "author": "Digital Alchemy DSP",
+ "license": "GPL-2.0-or-later",
+ "target": {
+  "device": "digitone-mk1",
+  "product": "Digitone mk1",
+  "os": "1.43",
+  "syx_sha256": "c5a54cc05b921f2e4bd814834c5365c2a5aa01d7772a9a2961fac1c3095bf9aa",
+  "section3_sha256": "3831a477a2a22befb23c42e47e782853da49566ef5d0a1767fcf6c30e6767414",
+  "section3_len": 2732208
+ },
+ "sections": {
+  ".run": {
+   "align": 4,
+   "len": 1092,
+   "parts": [
+    [
+     "stock",
+     "0x4008e5b4",
+     10
+    ],
+    [
+     "hex",
+     "1aff630a428023c000000000"
+    ],
+    [
+     "stock",
+     "0x40013cba",
+     8
+    ],
+    [
+     "hex",
+     "23c000000000"
+    ],
+    [
+     "stock",
+     "0x400347fe",
+     8
+    ],
+    [
+     "hex",
+     "7cfc4ab900000000670001742439000000002039000000002239000000002f4200402f40003c2c3900000000243900000000b2af003c6700016e262f00409682ea832039000000002040068080001b002e3c00015d86d1fc80001a002f400038203c00015d864c0278004c003800242f003c9481ea824df90000000043e800042847"
+    ],
+    [
+     "stock",
+     "0x4001c166",
+     8
+    ],
+    [
+     "hex",
+     "2e0676182406e6aa163c000f424748472a102005e6a02811dc8c5088d9ef0030244020025280718075762a0026472e04e6a7260550892a422404028300007fff2f47002c2e0b7f87028200007fff71760a00908d4c0708002e0ae080d08d4c0078004c0038004c00280024472e2f002c4c007800700fe0a3e0a2d68a9685d48794842e03e0a72002028300007fff028000007fff24477e0feea22e0a4c0178004c0128004c0138004c01080024477e0fd2af0034eea3eea0d68ada83d4802145fff8d8822344fff8b1ef00386600ff32202f003c242f004023c60000000023c00000000023c20000"
+    ],
+    [
+     "stock",
+     "0x401347e4",
+     8
+    ],
+    [
+     "hex",
+     "00444e7524390000000022390000000042af003c2f4200402c3900000000243900000000b2af003c6600fe96b4af00406600fe8e4aaf003c67c0242f00402e3c00015d86262f00409682ea832039000000002040068080001b002f400038203c00015d864c0278004c003800242f003c9481ea82d1fc80001a004df90000000043e800042847"
+    ],
+    [
+     "stock",
+     "0x4001c166",
+     8
+    ],
+    [
+     "hex",
+     "6000fe800000005a0000333300000001000003240648096a0c8c0fab12c815e218f91c0b1f1a2223252828262b1f2e1130fb33df36ba398c3c563f1741ce447a471c49b44c3f4ebf5133539b55f558425a825cb35ed760eb62f164e866cf68a66a6d6c236dc96f5e70e2725473b575047641776b788479897a7c7b5c7c297ce37d897e1d7e9c7f097f617fa67fd87ff57fff7ff57fd87fa67f617f097e9c7e1d7d897ce37c297b5c7a7c79897884776b7641750473b5725470e26f5e6dc96c236a6d68a666cf64e862f160eb5ed75cb35a82584255f5539b51334ebf4c3f49b4471c447a41ce3f173c56398c36ba33df30fb2e112b1f2826252822231f1a1c0b18f915e212c80fab0c8c096a064803240000fcdcf9b8f696f374f055ed38ea1ee707e3f5e0e6dddddad8d7dad4e1d1efcf05cc21c946c674c3aac0e9be32bb86b8e4b64cb3c1b141aecdac65aa0ba7bea57ea34da1299f159d0f9b189931975a959393dd923790a28f1e8dac8c4b8afc89bf8895877c8677858484a483d7831d827781e3816480f7809f805a8028800b8001800b8028805a809f80f7816481e38277831d83d784a485848677877c889589bf8afc8c4b8dac8f1e90a2923793dd9593975a99319b189d0f9f15a129a34da57ea7beaa0bac65aecdb141b3c1b64cb8e4bb86be32c0e9c3aac674c946cc21cf05d1efd4e1d7dadad8dddde0e6e3f5e707ea1eed38f055f374f696f9b8fcdc"
+    ]
+   ]
+  },
+  ".bss": {
+   "align": 4,
+   "size": 16
+  }
+ },
+ "symbols": {
+  "di_off": [
+   ".bss",
+   12
+  ],
+  "di_depth_cur": [
+   ".bss",
+   4
+  ],
+  "di_phase": [
+   ".bss",
+   8
+  ],
+  "di_freq_cur": [
+   ".bss",
+   0
+  ],
+  "sin256": [
+   ".run",
+   580
+  ],
+  "digiring_depth": [
+   ".run",
+   572
+  ],
+  "digiring_render_in": [
+   ".run",
+   0
+  ],
+  "digiring_render_out": [
+   ".run",
+   38
+  ],
+  "digiring_on": [
+   ".run",
+   576
+  ],
+  "digiring_freq": [
+   ".run",
+   568
+  ]
+ },
+ "exports": [
+  "digiring_depth",
+  "digiring_freq",
+  "digiring_on",
+  "digiring_render_in",
+  "digiring_render_out"
+ ],
+ "imports": [],
+ "weak": [],
+ "relocs": [
+  [
+   ".run",
+   18,
+   "abs32",
+   "sec:.bss",
+   12
+  ],
+  [
+   ".run",
+   32,
+   "abs32",
+   "sec:.bss",
+   12
+  ],
+  [
+   ".run",
+   400,
+   "abs32",
+   "sec:.bss",
+   8
+  ],
+  [
+   ".run",
+   406,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   412,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   48,
+   "abs32",
+   "sec:.run",
+   576
+  ],
+  [
+   ".run",
+   58,
+   "abs32",
+   "sec:.run",
+   568
+  ],
+  [
+   ".run",
+   64,
+   "abs32",
+   "sec:.run",
+   572
+  ],
+  [
+   ".run",
+   70,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   84,
+   "abs32",
+   "sec:.bss",
+   8
+  ],
+  [
+   ".run",
+   90,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   112,
+   "abs32",
+   "sec:.bss",
+   12
+  ],
+  [
+   ".run",
+   164,
+   "abs32",
+   "sec:.run",
+   580
+  ],
+  [
+   ".run",
+   428,
+   "abs32",
+   "sec:.run",
+   568
+  ],
+  [
+   ".run",
+   434,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   448,
+   "abs32",
+   "sec:.bss",
+   8
+  ],
+  [
+   ".run",
+   454,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   500,
+   "abs32",
+   "sec:.bss",
+   12
+  ],
+  [
+   ".run",
+   546,
+   "abs32",
+   "sec:.run",
+   580
+  ]
+ ],
+ "sites": [],
+ "collections": {},
+ "contribute": [
+  {
+   "to": "ev_render_in",
+   "order": 50,
+   "data": "00000000",
+   "relocs": [
+    [
+     0,
+     "abs32",
+     "sym:digiring_render_in",
+     0
+    ]
+   ],
+   "claims": []
+  },
+  {
+   "to": "ev_render_out",
+   "order": 50,
+   "data": "00000000",
+   "relocs": [
+    [
+     0,
+     "abs32",
+     "sym:digiring_render_out",
+     0
+    ]
+   ],
+   "claims": []
+  }
+ ],
+ "copied": [],
+ "resources": {
+  "names": [
+   "ui:master ring/AM"
+  ]
+ },
+ "requires": [
+  "core"
+ ],
+ "conflicts": [],
+ "build": {
+  "sources": {
+   "ring.c": "a6e3c2bb8ad54696d165fe0071ee4b62220f36cd96a33c76e6aa956b2dbe4276"
+  }
+ },
+ "signature": null
+}

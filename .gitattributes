@@ -1,0 +1,10 @@
+# elemods are JSON packages: keep their bytes exactly (no CRLF conversion),
+# so the SHA256SUMS stay valid.
+*.elemod -text
+*.syx    binary
+*.bin    binary
+
+# Text files normalised to LF in the repo.
+*.md   text eol=lf
+*.sh   text eol=lf
+*.ps1  text eol=crlf

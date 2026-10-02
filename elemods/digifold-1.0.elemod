@@ -1,0 +1,190 @@
+{
+ "elemod": 2,
+ "id": "digifold",
+ "version": "1.0",
+ "title": "Digi Fold",
+ "description": "A master wavefolder: a triangle fold with an on/off and an amount. Amount 0 is 1.0x (no fold); higher amounts fold the peaks harder and add harmonics. Runs after the ring and the EQ (ring -> EQ -> fold). Combines with every mod.",
+ "category": "Sound",
+ "author": "Digital Alchemy DSP",
+ "license": "GPL-2.0-or-later",
+ "target": {
+  "device": "digitone-mk1",
+  "product": "Digitone mk1",
+  "os": "1.43",
+  "syx_sha256": "c5a54cc05b921f2e4bd814834c5365c2a5aa01d7772a9a2961fac1c3095bf9aa",
+  "section3_sha256": "3831a477a2a22befb23c42e47e782853da49566ef5d0a1767fcf6c30e6767414",
+  "section3_len": 2732208
+ },
+ "sections": {
+  ".run": {
+   "align": 4,
+   "len": 264,
+   "parts": [
+    [
+     "stock",
+     "0x4008e5b4",
+     10
+    ],
+    [
+     "hex",
+     "1aff630a428023c000000000"
+    ],
+    [
+     "stock",
+     "0x40013cba",
+     8
+    ],
+    [
+     "hex",
+     "23c000000000"
+    ],
+    [
+     "stock",
+     "0x40001bd4",
+     8
+    ],
+    [
+     "hex",
+     "001c4ab900000000670000ba243900000000670000b02839000000002044d1fc80001a00068200000100068480001b0043e8000426102203"
+    ],
+    [
+     "stock",
+     "0x400e8dc0",
+     8
+    ],
+    [
+     "hex",
+     "4a816d00008a2001e08971804c0218004c020800e088d0810280007fffff0c8000400000630a223c00800000928020014c03080050882140fff8700126112203d683978386804a816d4a2001e08971804c0218004c020800e088d0810280007fffff0c8000400000630a223c00800000928020014c03080050892340fff8b8886600ff72"
+    ],
+    [
+     "stock",
+     "0x4000275e",
+     10
+    ],
+    [
+     "hex",
+     "44816000ff74448160b200000001"
+    ]
+   ]
+  },
+  ".bss": {
+   "align": 4,
+   "size": 8
+  }
+ },
+ "symbols": {
+  "df_off": [
+   ".bss",
+   4
+  ],
+  "digifold_render_out": [
+   ".run",
+   38
+  ],
+  "digifold_render_in": [
+   ".run",
+   0
+  ],
+  "digifold_on": [
+   ".run",
+   260
+  ],
+  "digifold_amount": [
+   ".bss",
+   0
+  ]
+ },
+ "exports": [
+  "digifold_amount",
+  "digifold_on",
+  "digifold_render_in",
+  "digifold_render_out"
+ ],
+ "imports": [],
+ "weak": [],
+ "relocs": [
+  [
+   ".run",
+   18,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   32,
+   "abs32",
+   "sec:.bss",
+   4
+  ],
+  [
+   ".run",
+   48,
+   "abs32",
+   "sec:.run",
+   260
+  ],
+  [
+   ".run",
+   58,
+   "abs32",
+   "sec:.bss",
+   0
+  ],
+  [
+   ".run",
+   68,
+   "abs32",
+   "sec:.bss",
+   4
+  ]
+ ],
+ "sites": [],
+ "collections": {},
+ "contribute": [
+  {
+   "to": "ev_render_in",
+   "order": 50,
+   "data": "00000000",
+   "relocs": [
+    [
+     0,
+     "abs32",
+     "sym:digifold_render_in",
+     0
+    ]
+   ],
+   "claims": []
+  },
+  {
+   "to": "ev_render_out",
+   "order": 60,
+   "data": "00000000",
+   "relocs": [
+    [
+     0,
+     "abs32",
+     "sym:digifold_render_out",
+     0
+    ]
+   ],
+   "claims": []
+  }
+ ],
+ "copied": [],
+ "resources": {
+  "names": [
+   "ui:master wavefolder"
+  ]
+ },
+ "requires": [
+  "core"
+ ],
+ "conflicts": [],
+ "build": {
+  "sources": {
+   "fold.c": "5e8b50402654c73467d17559712cdfb52e310ac4d300d48769862ca8ad656158"
+  }
+ },
+ "signature": null
+}
