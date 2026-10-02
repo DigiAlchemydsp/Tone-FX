@@ -102,3 +102,5 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 [`CHANGELOG.md`](CHANGELOG.md). No firmware is included or distributed here; the
 `.elemod`s carry only our own code and patch sites (byte-checked against your
 stock file at build time).
+
+Maintainers: see [`RELEASING.md`](RELEASING.md) for how to cut the next release.
