@@ -15,6 +15,12 @@ from while the older `RingTone` repo is still around.
 > Unofficial and unsupported. Not affiliated with, endorsed by or supported by
 > Elektron. Flashing modified firmware is at your own risk.
 
+## Screenshots
+
+![Digi Filter COMB mode](Screenshots/COMB.png)
+![Digi Fold / EQ page](Screenshots/FOLD.png)
+![Digi FX ring modulator page](Screenshots/RING.png)
+
 ## The suite
 
 | package | what |
