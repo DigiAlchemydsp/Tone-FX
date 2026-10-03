@@ -25,8 +25,18 @@ save), and the RING/FOLD/EQ controls now use the stock **0..127** scale.
 
 ## Tested
 
+- **Real hardware** (a Digitone mk1): stress-tested with the full suite — the
+  build boots and holds up under long, busy patterns, and the per-pattern
+  settings survive pattern switches, reloads and power cycles.
 - Emulator (`dn1-2.2d`, test tags 2.2a…2.2d): boots and settles,
   `dsp_running=2`; the master pages and live render run with 0 faults; the
   fold/EQ layout is clean; the settings persist per pattern
   (`digiemu_pattern_store.py`).
-- **Not yet a hardware audio pass.**
+
+## Known bugs / future fixes
+
+- Slider behaviour (match the stock parameter widgets), encoder acceleration,
+  per-parameter value readouts and consistent page titles/units.
+- LFO destinations for the DIGI parameters remain **parked** (off, no page
+  control).
+- CPU/DSP load is the user's to manage on busy patterns.

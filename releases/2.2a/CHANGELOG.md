@@ -38,17 +38,22 @@ Packages: `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.1`, `digiring-1.1`,
 
 ### Tested
 
+- **Real hardware** (a Digitone mk1): stress-tested with the full suite — the
+  build boots and holds up under long, busy patterns, and the per-pattern
+  settings survive pattern switches, reloads and power cycles.
 - Emulator (`dn1-2.2d`, test tags 2.2a…2.2d): boots and settles,
   `dsp_running=2`; the master pages and the live render run with 0 faults; the
   fold/EQ page draws cleanly; the settings persist per pattern
-  (`digiemu_pattern_store.py`). **Not yet a hardware audio pass.**
+  (`digiemu_pattern_store.py`).
 
-### Future fixes
+### Known bugs / future fixes
 
 - **Slider behaviour:** make the faders/bars match the stock parameter widgets
   more closely (EQ fill from the centre, a shared smoothing, value readouts).
 - **Encoder acceleration:** match the stock fast-turn curve per parameter
   (currently one step per notch plus whatever acceleration the OS delivers).
+- **LFO destinations:** driving the DIGI parameters from a track LFO is
+  **parked** — the bridge is in the code but off, with no page control.
 - **UI improvements:** consistent titles/units across the three pages and
   per-parameter value readouts.
 

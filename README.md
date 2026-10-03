@@ -118,9 +118,25 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 
 ## Status
 
-**Work in progress**, emulator-tested. Current package versions are listed in
+**Stress-tested on real hardware** (a Digitone mk1): the full suite boots and
+holds up under long, busy patterns, and the per-pattern settings survive
+pattern switches, reloads and power cycles. Also tested in the **digiemu**
+emulator (boot, settle, `dsp_running=2`). Current package versions are listed in
 [`CHANGELOG.md`](CHANGELOG.md). No firmware is included or distributed here; the
 `.elemod`s carry only our own code and patch sites (byte-checked against your
 stock file at build time).
+
+## Known bugs / future fixes
+
+- **Slider behaviour:** the page faders/bars should track the stock parameter
+  widgets more closely (EQ fill from the centre, shared smoothing, value
+  readouts).
+- **Encoder acceleration:** match the stock fast-turn curve per parameter
+  (currently one step per notch plus whatever acceleration the OS delivers).
+- **LFO destinations:** driving the DIGI parameters from a track LFO is
+  **parked** — the bridge is in the code but off, with no page control.
+- **UI improvements:** consistent titles/units across the three pages and
+  per-parameter value readouts.
+- **CPU/DSP load** is the user's to manage (see *Load* above).
 
 Maintainers: see [`RELEASING.md`](RELEASING.md) for how to cut the next release.
