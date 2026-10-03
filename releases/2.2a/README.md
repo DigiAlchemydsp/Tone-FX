@@ -138,5 +138,3 @@ stock file at build time).
 - **UI improvements:** consistent titles/units across the three pages and
   per-parameter value readouts.
 - **CPU/DSP load** is the user's to manage (see *Load* above).
-
-Maintainers: see [`RELEASING.md`](RELEASING.md) for how to cut the next release.
