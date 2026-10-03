@@ -27,11 +27,11 @@ from while the older `RingTone` repo is still around.
 |---|---|
 | `core-dn1-2.0a.elemod` | the required core (the hook bus) — **always install this** |
 | `digimeter-1.1.elemod` | output level metering (drawn on the DIGI FX page) |
-| `digieq-1.1.elemod` | master tone tilt (low / high band gain) |
-| `digiring-1.1.elemod` | master ring modulator / tremolo, with an animated page |
-| `digifold-1.1.elemod` | master wavefolder (triangle fold), with a spiral display |
+| `digieq-1.0.elemod` | master tone tilt (low / high band gain) |
+| `digiring-1.0.elemod` | master ring modulator / tremolo, with an animated page |
+| `digifold-1.0.elemod` | master wavefolder (triangle fold), with a spiral display |
 | `digifilter-1.0.elemod` | per-voice filter: BP / BP2 / COMB / TRASH on up to 4 voices |
-| `digictl-1.6.elemod` | the DIGI pages and all the controls for the above; keeps the settings per pattern |
+| `digictl-1.3.elemod` | the DIGI pages and all the controls for the above |
 
 `digictl` requires the other five, so they install as a **set**. Everything is
 `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
@@ -52,12 +52,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 2.2a
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 2.1h
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 2.2a
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 2.1h
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -79,14 +79,9 @@ pages. Tone+FX appends three of its own after the stock ones:
   straight line at 0 and coils as it folds), **C** EQ LOW on/off, **D** EQ LOW
   amount, **E** EQ HIGH on/off, **F** EQ HIGH amount.
 
-On those pages, **LEFT / RIGHT** rotate the three pages. Every parameter is
-**0–127** and moves **one step per notch** — the stock convention (EQ LOW/HIGH
-are 0–127 with **64 = flat**; filter FREQ/RESO are 0–127 too). PAGE and every
-stock key keep their stock meaning.
-
-**The settings are stored per pattern** (inside the saved pattern data): they
-follow a pattern switch / reload and travel with a project save, like stock
-parameters.
+On those pages, **LEFT / RIGHT** rotate the three pages. Every encoder/slider
+moves **1/127 of its range per step**, so all parameters feel the same. PAGE and
+every stock key keep their stock meaning.
 
 Signal order on the master mix is **ring → EQ → fold**; the filter runs
 per-voice, before the mix. Ring, EQ and fold are on by default; the filter is
@@ -100,15 +95,6 @@ the filter's **COMB / TRASH** on several voices — **will stress the CPU/DSP**
 and can cause dropouts. Manage it yourself: turn off what you are not using,
 keep the routed filter voices low (the filter is capped at **4 voices**), and
 back off RESO / depth on busy patterns.
-
-## Releases
-
-- `elemods/` at the repository root is the **current release** (this is what
-  [`SHA256SUMS`](SHA256SUMS) covers).
-- [`releases/`](releases/) holds a **packaged copy of each cut release**
-  (`README`, `CHANGELOG`, `LICENSE`, `SHA256SUMS`, `elemods/`, `tools/`,
-  `Screenshots/` and the `.zip`), newest first.
-- [`archive/`](archive/) holds **superseded releases** (e.g. `2.1h`).
 
 ## Verify a download
 

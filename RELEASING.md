@@ -7,12 +7,17 @@ development repo (`digitone_corea` / RingTone).
 ## What a release contains
 
 - `elemods/` — all seven packages, always the full set:
-  `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.0`, `digiring-1.0`,
-  `digifold-1.0`, `digifilter-1.0`, `digictl-1.3`.
+  `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.1`, `digiring-1.1`,
+  `digifold-1.1`, `digifilter-1.0`, `digictl-1.6`. This is the **current**
+  release (what `SHA256SUMS` covers).
 - `SHA256SUMS` — hashes of every `.elemod`, kept byte-exact by
   `.gitattributes` (`*.elemod -text`).
 - `README.md`, `CHANGELOG.md`, `LICENSE`, `tools/build.ps1`, `tools/build.sh`.
-- A GitHub **Release** tagged `v<os-version>` (e.g. `v2.1h`) with a zip of the
+- `releases/<os-version>/` — a **frozen package** of a cut release: its own
+  `README`, `CHANGELOG`, `LICENSE`, `SHA256SUMS`, `elemods/`, `tools/`,
+  `Screenshots/` and `Tone+FX-<os-version>.zip`.
+- `archive/<os-version>/` — the same package for a **superseded** release.
+- A GitHub **Release** tagged `v<os-version>` (e.g. `v2.2a`) with a zip of the
   above plus the individual `.elemod`s attached.
 
 The OS version tag is what the unit shows (4 characters, e.g. `2.1h`); the git
@@ -45,13 +50,15 @@ foreach ($x in 'digimeter','digieq','digiring','digifold','digifilter','digictl'
 python "C:\Users\benan\Music\ELEKTRON\digitone_corea\tests\filter_model.py"
 # link + patch a syx, then in digiemu (patched-Unicorn venv):
 python -m elekloader.patch --stock $stock --mod $core `
-  --mod "$m\digimeter\out\digimeter-1.1.elemod" --mod "$m\digieq\out\digieq-1.0.elemod" `
-  --mod "$m\digiring\out\digiring-1.0.elemod" --mod "$m\digifold\out\digifold-1.0.elemod" `
-  --mod "$m\digifilter\out\digifilter-1.0.elemod" --mod "$m\digictl\out\digictl-1.3.elemod" `
+  --mod "$m\digimeter\out\digimeter-1.1.elemod" --mod "$m\digieq\out\digieq-1.1.elemod" `
+  --mod "$m\digiring\out\digiring-1.1.elemod" --mod "$m\digifold\out\digifold-1.1.elemod" `
+  --mod "$m\digifilter\out\digifilter-1.0.elemod" --mod "$m\digictl\out\digictl-1.6.elemod" `
   --out "$env:TEMP\opencode\ToneFX.syx" --version <osver>
 python -m emu.portable --add "$env:TEMP\opencode\ToneFX.syx" --yes   # boots + settles, dsp_running=2
-python "C:\Users\benan\Music\ELEKTRON\digitone_corea\tests\digiemu_digifilter.py" --fw <dn1-...>
+python "C:\Users\benan\Music\ELEKTRON\digitone_corea\tests\digiemu_pattern_store.py" --fw <dn1-...>
 ```
+
+(For the DIGI pages, `tests/digiemu_fx_screenshots.py` captures them.)
 Record in the CHANGELOG what actually ran (emulator, and whether a hardware pass
 happened).
 
@@ -68,6 +75,13 @@ happened).
   ```
 - Add a `## <osver>` section to `CHANGELOG.md`; update `README.md` if the
   controls or load notes changed.
+- **Freeze the package** into `releases/<osver>/` (copy the updated `README.md`,
+  `CHANGELOG.md`, `LICENSE`, `SHA256SUMS`, `elemods/`, `tools/`, `Screenshots/`)
+  and build `releases/<osver>/Tone+FX-<osver>.zip` from those items; put the
+  release notes next to it (`notes.md`).
+- **Archive the previous release:** if `releases/<old>/` does not exist yet,
+  build it from the previous root state (see `archive/2.1h/` for an example) and
+  move it to `archive/<old>/`.
 
 ### 4. Commit and release
 ```powershell
@@ -75,12 +89,11 @@ $root = "C:\Users\benan\Music\ELEKTRON\Tone+FX"          # always pass --repo, o
 git -C $root add -A; git -C $root commit -m "Tone+FX <osver>: <summary>"
 git -C $root push origin master
 
-# package + release
-$tmp = "C:\Users\benan\AppData\Local\Temp\opencode\ToneFX-pkg"
-# build Tone+FX-<osver>.zip from README/CHANGELOG/LICENSE/SHA256SUMS/elemods/tools
+# package already frozen under releases/<osver>/
+$zip = "$root\releases\<osver>\Tone+FX-<osver>.zip"
 gh release create v<osver> --repo DigiAlchemydsp/Tone-FX --target master `
-  --title "Tone+FX <osver>" --notes-file "$tmp\notes.md" `
-  "$tmp\Tone+FX-<osver>.zip" (Get-ChildItem "$root\elemods\*.elemod" | ForEach-Object FullName)
+  --title "Tone+FX <osver>" --notes-file "$root\releases\<osver>\notes.md" `
+  $zip (Get-ChildItem "$root\elemods\*.elemod" | ForEach-Object FullName)
 ```
 
 **Gotcha:** `gh release create` infers the repo from the current directory.
@@ -89,8 +102,8 @@ release onto the old `DigiFilter` repo).
 
 ## Versioning
 
-- Mod `version` fields and the OS tag move independently: e.g. suite `2.1h` has
-  `digifilter-1.0` + `digictl-1.3`.
+- Mod `version` fields and the OS tag move independently: e.g. suite `2.2a` has
+  `digifilter-1.0` + `digictl-1.6`.
 - Keep the OS tag unique per build (the unit shows it); it is how a tester tells
   a stale flash from a new one.
 

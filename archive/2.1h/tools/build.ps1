@@ -2,19 +2,19 @@
 # packaged elemods. No firmware is distributed with this repo.
 #
 #   ./tools/build.ps1 -Stock Digitone_and_Digitone_Keys_OS1.43.syx `
-#                     -Out ToneFX.syx -Version 2.2a
+#                     -Out ToneFX.syx -Version 2.1h
 #
 # Needs elekloader importable (installed, or PYTHONPATH set to its folder).
 param(
     [Parameter(Mandatory = $true)][string]$Stock,
     [string]$Out = "ToneFX.syx",
-    [string]$Version = "2.2a"
+    [string]$Version = "2.1h"
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $mods = @(
-    "core-dn1-2.0a", "digimeter-1.1", "digieq-1.1", "digiring-1.1",
-    "digifold-1.1", "digifilter-1.0", "digictl-1.6"
+    "core-dn1-2.0a", "digimeter-1.1", "digieq-1.0", "digiring-1.0",
+    "digifold-1.0", "digifilter-1.0", "digictl-1.3"
 )
 $argv = @("-m", "elekloader.patch", "--stock", $Stock)
 foreach ($m in $mods) {
