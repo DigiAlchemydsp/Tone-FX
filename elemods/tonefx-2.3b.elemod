@@ -1,7 +1,7 @@
 {
  "elemod": 2,
  "id": "tonefx",
- "version": "2.3a",
+ "version": "2.3b",
  "title": "Tone+FX",
  "description": "The Tone+FX suite as one elemod: master ring modulator (digiring), tone-tilt EQ (digieq), wavefolder (digifold), per-voice multimode filter (digifilter), output meter (digimeter) and the DIGI FX / DIGI FILTER / DIGI FOLD-EQ master pages with all their controls (digictl). Settings are stored per pattern and the FX respond to incoming MIDI CC. It REQUIRES the core (core-dn1) and does not include it, so it combines with any other elekloader mods.",
  "category": "Sound",
@@ -767,16 +767,7 @@
     ],
     [
      "hex",
-     "003060902f02226f000841f900000000222f000c20309c004a816f304a806d34d28020016d10e8802400e98a928221819c00241f4e75"
-    ],
-    [
-     "stock",
-     "0x4003e226",
-     8
-    ],
-    [
-     "hex",
-     "2400e98a928221819c00241f4e754a8167d04a806fcc4280d28020016cca60d8"
+     "003060902f02222f000843f900000000206f000c20311c004a886f304a806d34d1c020086d12e4802400448241f02c00241f23881c004e755680e4802400448241f02c00241f23881c004e754a8867d04a806fcc4280d1c020086cca60da"
     ],
     [
      "stock",
@@ -4652,7 +4643,7 @@
    "filter.c": "d7a977b76a1ba2a02be31dc1bc8b1c3307c695496cf88cecd6098c6223e51d42",
    "filter_dsp.s": "b0be231b02af9eef6a4066ad00c53cc21b1eb79adaa93ec398d2f8ff6c888bce",
    "filter_glue.s": "d0adb6d8cec1f663e5b7264f41e9064aab1e4a8b2631d41ae29c0cb01ffc64e8",
-   "digictl.c": "d548b752c9dda854b005bdcbf4e72531df2f15b12387ab744ae3708f96372a89",
+   "digictl.c": "69dffb2fea992ac10f0470a6cf0781fb6c0f2104564367d82959c4e8fb48f6f5",
    "cc_glue.s": "45854e69c0f77e382dda91305474209e0087d6b4057894d77eb8783d755e2179"
   }
  },
