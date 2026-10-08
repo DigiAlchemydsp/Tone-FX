@@ -151,10 +151,11 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 
 ## Status
 
-**Stress-tested on real hardware** (a Digitone mk1): the full suite boots and
-holds up under long, busy patterns, and the per-pattern settings survive
-pattern switches, reloads and power cycles. Also tested in the **digiemu**
-emulator (boot, settle, `dsp_running=2`). Current package versions are listed in
+**Stress-tested on real hardware over 3 days: PASS** (a Digitone mk1): the full
+suite boots and holds up under long, busy patterns, and the per-pattern settings
+survive pattern switches, reloads and power cycles. Also tested in the
+**digiemu** emulator (boot, settle, `dsp_running=2`). Current package versions
+are listed in
 [`CHANGELOG.md`](CHANGELOG.md). No firmware is included or distributed here; the
 `.elemod`s carry only our own code and patch sites (byte-checked against your
 stock file at build time).
