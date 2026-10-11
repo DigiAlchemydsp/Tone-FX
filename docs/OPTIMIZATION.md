@@ -5,8 +5,7 @@ optimization methods used (and why), what is repurposed from the stock OS and
 from RingTone, and the RAM / flash / headroom ledger. This is the technical
 companion to `HANDOFF.md`; `DSP.md` is the address/architecture reference.
 
-Documents the **3.1d** source suite (`.run 18820`, `.bss 25222`); the released
-elemod in `elemods/` is 3.1c until 3.1d is cut.
+Current package: `tonefx 3.1h` (`.run 20528`, `.bss 25262`).
 
 ## 1. Where the code runs
 
@@ -48,6 +47,37 @@ handler that uses it must leave `MACSR` as found.
 
 Total ≈ 1,633 lines (C+asm+headers); 1,833 with `mod.json`s.
 
+## 2b. Per-block CPU footprint (Core A)
+
+All of it is **Core A**; the suite's **DSP (Core B) footprint is 0**. Costs are
+per **active** stereo frame (32 frames/block, 1500 blocks/s), approximate, from
+the compiled inner loops (`m68k-elf-objdump`) plus the source. A **bypassed**
+section costs ~0 (see §4.3).
+
+| # | block / mode | ≈ insn/frame | driver |
+|---|---|---|---|
+| 1 | `digicrush` — BITS | ~10 | AND mask (dither adds ~12: LFSR muls) |
+| 2 | `digicrush` — SR | ~12 | hold counter, 2 loads / 2 stores |
+| 3 | `digimeter` | ~15 | 2 loads + abs + compare (no mul) |
+| 4 | `digiwave` — WIDE | ~18 | 2× `dn_mul14` + mid/side |
+| 5 | `digifold` — CLEAN / MUD | ~20 | 2× Q8 gain + reflect |
+| 6 | `digiwave` — PAN | ~24 | 3× `dn_mul15` + pan law |
+| 7 | `digicrush` — CRUNCH | ~25 | 2× Q8 gain + clamp |
+| 8 | `digiring` | ~28 | `sin256` interp + 2× `dn_mul15` |
+| 9 | `digieq` | ~30 | one-pole + 2× `dn_mul14` |
+| 10 | `digifold` — DIST / TRSH | ~35 | + 2× drive (gain → clamp) |
+| 11 | `digiwave` — WOB | ~45 | 2 interpolated delay reads + blend |
+| 12 | `digiwave` — FLAN | ~55 | WOB + feedback write |
+| 13 | `digiwave` — SHFT | ~75 | 8 loads, 4 interp muls, window + crossfade |
+
+Compiled `_render_out` sizes corroborate (whole function incl. setup / all
+modes): `meter 162 · eq 322 · ring 326 · fold 356 · crush 476 · wave 2178`.
+
+Notes: the delay modes (WOB/FLAN/SHFT) are ALU-light but touch the 16 KB **delay
+line in DDR**, whose accesses cost more than the instruction count implies. The
+whole suite runs on Core A; reduce DSP load only via fewer/blanked FM voices
+(`ev_voice_on` / section 7).
+
 ## 3. Fixed-point rules (why the code looks the way it does)
 
 - **No FPU** on the MCF5441x, **no libc, no `memcpy`/`memset`, no 64-bit
@@ -77,10 +107,15 @@ Ordered roughly by how much they bought.
    once per block and stepped across the 32 frames
    (`step = (target - cur) >> 5`), so knob moves and bypass are click-free with
    no per-sample condition tests. Used by ring, EQ, fold, wave.
-3. **Exact bypass / early-out.** A handler returns immediately when off or at
-   its neutral value: fold `amount==0`, crush `amount==0`, wave at
-   WOB/FLAN/PAN depth 0, SHFT/WIDE at 64, and each has a settled-state check.
-   A bypassed FX costs ~one branch per block.
+3. **Click-free ramped true bypass (per section).** Each section's amount ramps
+   to its **neutral value** over ~1 block (ring depth 0, EQ flat, fold amount 0,
+   crush amount 0, WAVE per-mode neutral: WOB wet 0, FLAN mix 0, SHFT dry,
+   PAN centre, WIDE 64), and once settled the handler `return`s **before any
+   per-sample loop** — a true bypass with zero per-sample cost and an exact
+   passthrough. This replaced the hard on/off for fold/crush/WAVE (which
+   clicked) and fixed crush's bit mapping so amount 0 is identity (24 bits, not
+   16). WAVE's SHFT mode gained a dry/wet fade so it can bypass cleanly; PAN and
+   WIDE now ramp too.
 4. **Block-rate LFO (one sine per block).** `digiwave` and `digiring` evaluate
    `sin256` at the block start and a linear per-sample step
    (`lstep = (sin(next) - sin(now)) >> 5`), replacing a per-sample sine
@@ -109,15 +144,19 @@ Ordered roughly by how much they bought.
 12. **Shared infrastructure / one engine, two WAVE pages.** One per-pattern
     store, one CC router `jmp`, one page factory and one invalidate path serve
     all modules. `digiwave`'s five modes are split over **two pages** — kind 4
-    PITCH (WOB / SHFT) and kind 5 STEREO (FLAN / PAN / WIDE) — that edit one
-    shared engine; the D encoder cycles only within the shown page's group, so
-    the shared `digiwave_mode` is always reachable from the page in use.
+    PITCH (WOB / SHFT) and kind 5 STEREO (FLAN / PAN / WIDE) — over one shared
+    delay engine. Each page has its **own mode** (`digiwave_pmode`,
+    `digiwave_smode`) so a page only ever shows and selects its own modes, plus
+    an active-group flag (`digiwave_page`) set when a page is edited, which
+    decides which mode the engine runs. Speed/depth are shared; mix/feedback are
+    STEREO (FLAN). Feedback is capped at **0.75** (`fb = fb_knob*24575/127`) to
+    keep the flanger from self-oscillating into distortion.
 13. **Per-mod compiler flags (A/B, measured).** `mod.json` accepts `cflags`,
     appended after the device `-O2` (`elekloader/sdk/build.py:125`):
 
     | flags | `.run` | `.bss` | note |
     |---|---|---|---|
-    | `-O2` (default) | 18820 | 25222 | imports nothing |
+    | `-O2` (default) | 20528 | 25262 | imports nothing |
     | `-O3 -funroll-loops` | 35112 | 25230 | **imports `memset`** (loop distribution) — unusable |
     | `-O3 -fno-tree-loop-distribute-patterns` | 24152 | 25230 | +28 % code, imports nothing |
 
@@ -142,7 +181,7 @@ Ordered roughly by how much they bought.
 - **The unused MIDI-track 64-byte block.** Each pattern's four MIDI tracks
   leave `track+0x100` zero in all 128 slots and the OS never writes it;
   `digictl` uses `pattern+0x1040` for the **"DGX1"** per-pattern store
-  (`v6`, 22 int16, 52 of 64 bytes).
+  (`v7`, 24 int16, 56 of 64 bytes).
 - **The parked LFO bridge** (`digimod_dest`/`digimod_voice`, per-voice FLTR
   FREQ read at `0x80003544`) is kept in the store but has no page yet.
 - **The stock CC router** (`0x400ED94E`) is hooked once (`cc_glue.s`, `op:"jmp"`)
@@ -154,17 +193,17 @@ Ordered roughly by how much they bought.
 - **`build.py` size reporting / the linker** reports `imports nothing`, which is
   what keeps the no-libc build honest.
 
-## 6. Footprint / headroom ledger (3.1d)
+## 6. Footprint / headroom ledger (3.1h)
 
 | item | value |
 |---|---|
-| `.run` (code + rodata) | 18,820 B |
-| `.bss` (RAM state) | 25,222 B |
+| `.run` (code + rodata) | 20,528 B |
+| `.bss` (RAM state) | 25,262 B |
 | — of which `digiwave` delay line | 2048 × 2 × 4 = 16,384 B (+8 guard) |
 | — of which tables (`sin256`, `wv_ratio`, `wv_win`) | ~1,024 + 512 + 512 B (`.run`) |
 | **RAM spare** | **~86 KB of 128 KB** |
-| flash spare (3.1d patch) | 1,693,632 B |
-| sites / relocations | 11 / 497; imports nothing |
+| flash spare (3.1h patch) | ≈1.69 MB |
+| sites / relocations | 11 / 545; imports nothing |
 
 Budgets: `.run`+`.bss` share 128 KB across every linked mod; the delay line is
 the single largest allocation. If it ever needs to grow, the `bulk` region
@@ -184,7 +223,7 @@ Pending:
 - **DSP (Core B)** — untouched by the suite; its render is not part of the FX
   budget.
 - **dB** — peak/RMS with FX off vs on not yet measured.
-- **CC 20–29** — not checked against the stock CC table (`0x4018D104`).
+- **CC 20–31** — not checked against the stock CC table (`0x4018D104`).
 
 ## 8. Future footprint work
 

@@ -1,5 +1,30 @@
 # Changelog
 
+## 3.1h — WAVE two pages, true bypass, page art
+
+Packages: `core-dn1-2.0a`, `tonefx-3.1h`.
+
+- **WAVE split into two pages**: **PITCH** (WOB / SHFT) and **STEREO** (FLAN /
+  PAN / WIDE), each with its **own mode** over one shared delay engine. Speed /
+  depth are shared; mix / feedback are STEREO (FLAN). Flanger feedback is capped
+  at **75 %** to avoid self-oscillation.
+- **Click-free true bypass per section**: each effect ramps its amount to the
+  neutral value, then stops processing entirely — exact passthrough at zero
+  per-sample cost. Turning a page off is clean and frees its CPU.
+- **Page art**: frameless animated graphics in the leftmost third that **collapse
+  to a line at neutral** — CRUSH a scrolling waveform quantised / held / clipped
+  by the mode; PITCH **two vertical lines that wobble and intertwine at more
+  nodes with depth/speed**; STEREO a ripple (FLAN), a split (PAN) or a spread
+  (WIDE).
+- **Pitch shifter**: crossfade collapsed to one multiply per channel.
+- **Fixes**: Wobble/Flanger clicks (the swept delay is now fractional,
+  interpolated and clamped — it could step by whole samples and wrap negative);
+  Crush bit mapping (amount 0 is now identity, 24 bits).
+- **Store**: per-pattern block now **`"DGX1"` v7 (24 params)**. New MIDI CC
+  **20–31**.
+- Verified: compiles clean (`.run 20528`, `.bss 25262`, imports nothing), link
+  byte-verified, digiemu boot/settle (`dsp_running=2`) with all six pages.
+
 ## 3.1c — Crunch/Redux + Wave modulation (click fix, CPU opt)
 
 Packages: `core-dn1-2.0a`, `tonefx-3.1c`.
