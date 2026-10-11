@@ -1,63 +1,204 @@
-# Tone+FX CPU / footprint optimization (worktree `fx-opt`)
+# Tone+FX — DSP, CPU and footprint notes (Digitone mk1, OS 1.43)
 
-This worktree (`digitone_corea_fxopt`, branch `fx-opt`) is a clean copy of the
-FX baseline (`fx-additions`, commit with digicrush + digiwave) for optimizing
-CPU instructions and code size, A/B against `digitone_corea` (`fx-additions`).
-`HANDOFF.md` has the session context.
+What the suite's code does, how it is built, the fixed-point conventions, the
+optimization methods used (and why), what is repurposed from the stock OS and
+from RingTone, and the RAM / flash / headroom ledger. This is the technical
+companion to `HANDOFF.md`; `DSP.md` is the address/architecture reference.
 
-Baseline build (branch `fx-additions`): **`.run 18880`, `.bss 25222`**, 11
-sites, 497 relocations, imports nothing.
+Documents the **3.1d** source suite (`.run 18820`, `.bss 25222`); the released
+elemod in `elemods/` is 3.1c until 3.1d is cut.
 
-## How to A/B footprint
+## 1. Where the code runs
 
-Build each tree and compare the SDK's size line. Both trees need the same env
-(`$env:ELEKLOADER_CROSS`, `$env:PYTHONPATH`); see `HANDOFF.md` §4.
+Two ColdFire MCF5441x CPUs (`DSP.md`):
 
-```powershell
-# baseline
-python -m elekloader.sdk.build "mods\tonefx" --stock <stock.syx>   # in digitone_corea
-# optimized
-python -m elekloader.sdk.build "mods\tonefx" --stock <stock.syx>   # in digitone_corea_fxopt
-```
+- **Core A (main CPU)** — UI, sequencer, **effects and the mix**. Every master
+  FX in this suite is here.
+- **Core B ("DSP")** — the eight FM voices. Not touched by the suite.
 
-Footprint = the printed `.run` (code + rodata) and `.bss` (RAM). **Cycles** need
-the emulator: `emu.portable --check --timing` (slow) reports the render
-vector's deadline margin and CPU busy %; `emu.cftiming.deadline_report(clock,
-vector, period)` gives worst/p99 cycles against the 667 us block. A/B the same
-page/scenario in both builds.
+The suite is **subscription-only**: it never patches a stock instruction. Each
+FX is a handler on the core's render events:
 
-## Measured so far (compiler flags only, no code change)
+- `ev_render_in` (`void f(void)`, order 40/50) — remembers which half of the
+  output buffer this block writes: `dn_out_off()` reads eDMA ch54's SADDR
+  `0xFC0456C0` and returns `0x100` or `0`.
+- `ev_render_out` (order 50..65) — processes `0x80001A00 + off` (256 B,
+  **32 stereo frames, int32, 24-bit left-justified**) in place.
 
-`mod.json` supports per-mod `cflags` (appended after the device's `-O2`; see
-`elekloader/sdk/build.py:125`).
+Interrupt level, 1500 blocks/s, 48 kHz, 667 us per block. Handlers are
+`void f(void)`; d1/a0/a1 are free; the EMAC is saved/restored by the core, but a
+handler that uses it must leave `MACSR` as found.
 
-| flags | `.run` | `.bss` | notes |
+**Chain order** is the `ev_render_out` order:
+`ring(50) → EQ(55) → crush(57) → fold(60) → wave(62) → meter(65)`.
+
+## 2. Module inventory
+
+| mod | source | lines | stage / role |
 |---|---|---|---|
-| (`-O2` baseline) | 18880 | 25222 | imports nothing |
-| `-O3 -funroll-loops` | 35112 | 25230 | **imports `memset`** (loop distribution) — unusable |
-| `-O3 -fno-tree-loop-distribute-patterns` | 24152 | 25230 | +28% code, imports nothing |
+| `digimeter` | `meter.c` | 62 | L/R peak (log bars), scanned from the output half; read by the page |
+| `digieq` | `eq.c` | 63 | one-pole low/high split; low/high shelf, Q14 gains |
+| `digiring` | `ring.c` | 59 | 256-entry Q15 sine carrier; ring/tremolo |
+| `digicrush` | `crush.c` | 106 | BITS mask / SR hold / CRUNCH clip — one stateless stage |
+| `digifold` | `fold.c` | 100 | triangle wavefolder + hard-clip overdrive |
+| `digiwave` | `wave.c` | 275 | WOB/SHFT/FLAN/PAN/WIDE, one 16 KB delay line + one LFO |
+| `digictl` | `digictl.c` + `cc_glue.s` | 615 + 28 | the 6 master pages (RING/FOLD/TILT/CRUSH/PITCH/STEREO), encoders, keys, per-pattern store, MIDI CC |
+| `tonesplash` | `render.c` + `splash.s` | 212 + 18 | boot wordmark (intro only) |
+| shared | `src/corea.h`, `src/sin256.h` | 56 + 39 | Core A helpers + sine table |
 
-`-O3` grows code ~28% for an unmeasured cycle gain; `-funroll-loops` needs
-`-fno-tree-loop-distribute-patterns` to avoid a `memset` import (no libc). Keep
-`-O2` unless the emulator shows a real render-margin win.
+Total ≈ 1,633 lines (C+asm+headers); 1,833 with `mod.json`s.
 
-## Optimization menu (best impact first)
+## 3. Fixed-point rules (why the code looks the way it does)
 
-1. **Fuse the six master passes into one loop.** ring(50) -> eq(55) -> crush(57)
-   -> fold(60) -> wave(62) -> meter(65) each loop the 32-frame buffer today
-   (`ring.c:45`, `eq.c:49`, `fold.c:102`, `crush.c`, `wave.c`, `meter.c:43`):
-   ~6 loads + 6 stores per frame. One fused loop loads L/R once and stores once.
-   Keep the modular handlers for standalone builds; add a `tonefx_master()` fast
-   path for the merged suite.
-2. **EMAC multiplies.** `dn_mul15`/`dn_mul14` (`src/corea.h:55`) are 2 muls +
-   2 shifts. The MCF5441x EMAC does an exact 32x32->64 MAC in one op; the core
-   already saves/restores EMAC around the render, so a handler may use it but
-   must leave `MACSR` as found (`DSP.md` §2.4/§4).
-3. **SHFT trim.** Nearest-neighbour on the second grain (or both) drops 2-4
-   interp muls; only RAM changes with grain length.
-4. **Meter.** Only scan when the page is shown (gate on `dc_vis`); fold peak
-   detection into the fused loop.
-5. **Loop-level.** Unroll 2-4 frames; hoist table/state pointers; mark the
-   delay line + tables `__attribute__((aligned(16)))`.
-6. **Blocked:** `.fast` on-chip SRAM — the DN device profile claims no `.fast`
-   area and the render block is not self-contained (`docs/FAST-AUDIO-DN.md`).
+- **No FPU** on the MCF5441x, **no libc, no `memcpy`/`memset`, no 64-bit
+  multiply helper**. All arithmetic is integer, and `build.py` reports
+  `imports nothing` — that is a hard constraint, not a nicety.
+- The master bus is **int32, 24-bit left-justified**; the factory pattern peaks
+  near `2^21`, so headroom for gain is ~13 bits before clipping at 24 bits.
+- Helpers (`src/corea.h`):
+  - `dn_q15(x,c)   = (x>>15)*c` — cheap, quantizes in steps of `c`.
+  - `dn_q14d(x,d)  = (x>>14)*d` — cheap gain near 1.
+  - **`dn_mul15(x,c) = (x>>15)*c + (((x & 0x7fff)*c)>>15)`** — exact
+    `(x*c)>>15` with 32-bit ops only. The cheap form quantized the ring/EQ wet
+    signal in steps of the carrier (~-36 dB noise); the two-term form removed
+    that, at the cost of one extra multiply.
+  - `dn_mul14` is the same for a Q14 coefficient.
+- **No `-ffast-math`, no floats anywhere.**
+
+## 4. Optimization methods used
+
+Ordered roughly by how much they bought.
+
+1. **Master-insert subscription, not a patch.** Because every FX is just an
+   `ev_render_in`/`out` handler, all modules combine, there is no byte conflict,
+   and the chain order is data (`order`), not code. Zero stock-byte footprint
+   for the FX themselves.
+2. **Block-rate parameter + per-sample ramp.** Targets are read from globals
+   once per block and stepped across the 32 frames
+   (`step = (target - cur) >> 5`), so knob moves and bypass are click-free with
+   no per-sample condition tests. Used by ring, EQ, fold, wave.
+3. **Exact bypass / early-out.** A handler returns immediately when off or at
+   its neutral value: fold `amount==0`, crush `amount==0`, wave at
+   WOB/FLAN/PAN depth 0, SHFT/WIDE at 64, and each has a settled-state check.
+   A bypassed FX costs ~one branch per block.
+4. **Block-rate LFO (one sine per block).** `digiwave` and `digiring` evaluate
+   `sin256` at the block start and a linear per-sample step
+   (`lstep = (sin(next) - sin(now)) >> 5`), replacing a per-sample sine
+   (≈8 instructions/frame) with one multiply-free add.
+5. **Fractional, clamped, interpolated swept delay** (`digiwave` WOB/FLAN).
+   The first cut used an integer delay and a modulation span larger than the
+   base delay, so the read index both stepped by whole samples and could go
+   **negative** (`(wv_w + WV_N - (unsigned)d)` wrapped to garbage) — audible
+   clicks. The fix: delay in **Q16.16**, read through `wv_read` (linear
+   interpolation), and **clamp to >= 2 samples** so it can never wrap.
+6. **Guard sample.** `wv_buf[ch][WV_N]` mirrors index 0, so a fractional read
+   at `idx+1` needs no `& WV_MASK`.
+7. **Derived + collapsed crossfade window (SHFT).** The two grains' windows are
+   complementary, so the mix is
+   `g0*w0 + g1*(1-w0) = g1 + (g0-g1)*w0` — **one multiply per channel instead of
+   two**, and no second table lookup.
+8. **Shared read position (SHFT).** `idx`/`frac` are computed once per grain and
+   used for both L and R, instead of twice per channel.
+9. **Precomputed tables.** `sin256` (Q15) is shared by ring, the wave LFO and
+   the UI; `wv_ratio[128]` (Q16.16 `2^(semi/12)`) and `wv_win[256]` (Q15
+   triangle) are `const` in `.run`, built at compile time.
+10. **Stateless stage selection** (`crush`): BITS/SR/CRUNCH are chosen once per
+    block; only one runs, so a bypassed branch costs nothing.
+11. **Cheapest viable saturator.** fold's overdrive and crush's CRUNCH are a
+    single Q8 multiply + two compares (stateless), not a `tanh`.
+12. **Shared infrastructure / one engine, two WAVE pages.** One per-pattern
+    store, one CC router `jmp`, one page factory and one invalidate path serve
+    all modules. `digiwave`'s five modes are split over **two pages** — kind 4
+    PITCH (WOB / SHFT) and kind 5 STEREO (FLAN / PAN / WIDE) — that edit one
+    shared engine; the D encoder cycles only within the shown page's group, so
+    the shared `digiwave_mode` is always reachable from the page in use.
+13. **Per-mod compiler flags (A/B, measured).** `mod.json` accepts `cflags`,
+    appended after the device `-O2` (`elekloader/sdk/build.py:125`):
+
+    | flags | `.run` | `.bss` | note |
+    |---|---|---|---|
+    | `-O2` (default) | 18820 | 25222 | imports nothing |
+    | `-O3 -funroll-loops` | 35112 | 25230 | **imports `memset`** (loop distribution) — unusable |
+    | `-O3 -fno-tree-loop-distribute-patterns` | 24152 | 25230 | +28 % code, imports nothing |
+
+    Kept at `-O2`: `-O3` nearly doubles the code (or +28 % without loop
+    distribution) for an unmeasured cycle gain, and unrolling reintroduces a
+    `memset` dependency the no-libc build cannot satisfy.
+14. **Six passes over the buffer (identified, not yet fused).** Today ring, EQ,
+    crush, fold, wave and meter each loop the 32 frames, so each frame is
+    loaded/stored ~6 times. A single fused `tonefx_master()` loop (load L/R
+    once, run the stages inline, store once) is the next big win — see §8.
+
+## 5. Repurposed / reused
+
+- **`sin256.h`** — carried over from RingTone; now shared by ring, the wave LFO
+  and the RING page animation.
+- **The RingTone code base** — `meter.c`, `eq.c`, `ring.c`, `fold.c`,
+  `digictl.c` are the original suite modules, extended here.
+- **The master view's page vector.** The stock master view keeps its page kinds
+  in a vector at `view+124`; `digictl` **appends** kinds 0–5 (RING, FOLD, TILT,
+  CRUSH, PITCH, STEREO) after the stock pages and patches only the view's draw
+  slot (`0x40199BBC`). No stock page is taken.
+- **The unused MIDI-track 64-byte block.** Each pattern's four MIDI tracks
+  leave `track+0x100` zero in all 128 slots and the OS never writes it;
+  `digictl` uses `pattern+0x1040` for the **"DGX1"** per-pattern store
+  (`v6`, 22 int16, 52 of 64 bytes).
+- **The parked LFO bridge** (`digimod_dest`/`digimod_voice`, per-voice FLTR
+  FREQ read at `0x80003544`) is kept in the store but has no page yet.
+- **The stock CC router** (`0x400ED94E`) is hooked once (`cc_glue.s`, `op:"jmp"`)
+  and dispatches to `digictl_cc_apply`; only CCs the stock table does not use
+  are taken.
+- **The intro draw/flush sites** (9 call sites) are reused by `tonesplash`.
+- **The EMAC** is left to the core's save/restore; the FX avoid it today (see
+  §8) but the render already pays its save/restore.
+- **`build.py` size reporting / the linker** reports `imports nothing`, which is
+  what keeps the no-libc build honest.
+
+## 6. Footprint / headroom ledger (3.1d)
+
+| item | value |
+|---|---|
+| `.run` (code + rodata) | 18,820 B |
+| `.bss` (RAM state) | 25,222 B |
+| — of which `digiwave` delay line | 2048 × 2 × 4 = 16,384 B (+8 guard) |
+| — of which tables (`sin256`, `wv_ratio`, `wv_win`) | ~1,024 + 512 + 512 B (`.run`) |
+| **RAM spare** | **~86 KB of 128 KB** |
+| flash spare (3.1d patch) | 1,693,632 B |
+| sites / relocations | 11 / 497; imports nothing |
+
+Budgets: `.run`+`.bss` share 128 KB across every linked mod; the delay line is
+the single largest allocation. If it ever needs to grow, the `bulk` region
+(0x44000000–0x47BE0000) needs core-dn1 3.2 as a claimed region; today the suite
+runs on core-dn1 2.0a.
+
+## 7. Verified vs pending
+
+Verified: compiles clean, links/patch byte-verified (sections 2/4/5/6/7/8),
+digiemu boot/settle (`dsp_running=2`), all six pages present
+(`kinds=[16,15,17,0,1,2,3,4,5]`), hardware boot + first manual pass working.
+
+Pending:
+- **CPU headroom** — render-vector worst/p99 cycles and deadline margin
+  (`emu.cftiming.deadline_report`) not yet captured; the full
+  `emu.portable --check --timing` run was aborted.
+- **DSP (Core B)** — untouched by the suite; its render is not part of the FX
+  budget.
+- **dB** — peak/RMS with FX off vs on not yet measured.
+- **CC 20–29** — not checked against the stock CC table (`0x4018D104`).
+
+## 8. Future footprint work
+
+1. **Fuse the six master passes** into one loop (§4.14): order-of-magnitude
+   fewer loads/stores per frame.
+2. **Use the EMAC** for the Q15 multiplies (`dn_mul15`/`dn_mul14` are two muls +
+   shifts; the EMAC does an exact 32×32→64 MAC in one op). The core already
+   saves/restores EMAC; leave `MACSR` as found.
+3. **Trim SHFT further**: nearest-neighbour on the second grain (drop 2–4 interp
+   muls), optional by knob/flag; the crossfade is already one mul per channel.
+4. **Meter**: gate on page visibility (`dc_vis`) and fold peak detection into
+   the fused loop.
+5. **Loop-level**: unroll 2–4 frames; align the delay line and tables
+   (`__attribute__((aligned(16)))`).
+6. **`.fast` SRAM**: blocked — the DN device profile claims no `.fast` area and
+   the render block is not self-contained (`docs/FAST-AUDIO-DN.md`).
+7. **Reconsider `-O3`** only if a measured render-margin win appears.
