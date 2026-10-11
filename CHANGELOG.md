@@ -1,5 +1,32 @@
 # Changelog
 
+## 3.1c — Crunch/Redux + Wave modulation (click fix, CPU opt)
+
+Packages: `core-dn1-2.0a`, `tonefx-3.1c`.
+
+- **New master insert `digicrush` (Crunch / Redux)** — one stateless stage at a
+  time: **BITS** (bit-reduce to 16…4 bits, optional TPDF dither), **SR**
+  (sample-and-hold decimator) and **CRUNCH** (Q8 gain into a hard clip). New
+  **DIGI CRUSH** page (kind 3): A on/off, D mode, E amount, F tune.
+- **New master insert `digiwave`** — one modulation insert, one page, five
+  modes over a single shared delay line and one LFO: **WOB** (pitch
+  wobble/vibrato), **SHFT** (pitch shift, ±12 st), **FLAN** (flanger),
+  **PAN** (autopan), **WIDE** (stereo width). New **DIGI WAVE** page
+  (kind 4): A on/off, D mode, E speed, F depth, G mix, H feedback.
+- **Click fix**: the swept delay in WOB/FLAN is now **fractional,
+  interpolated and clamped**; before, it stepped by whole samples and could go
+  negative (wrapping the read index to garbage) — the audible clicks.
+- **SHFT CPU**: read position computed once per grain and shared by L/R, the
+  crossfade window derived (`w1 = 2^15-1-w0`), a guard sample dropping index
+  masks; the LFO is block-rate. Exact-bypass guards on every mode.
+- **`digictl`**: pages 3/4 wired, encoders, per-pattern store bumped to
+  **"DGX1" v6 (22 params)**, new MIDI CC **20–29**. Signal order is
+  **ring(50) → EQ(55) → crush(57) → fold(60) → wave(62) → meter(65)**.
+- Verified: compiles clean (`.run 18880`, `.bss 25222`, imports nothing), link
+  byte-verified (sections 2/4/5/6/7/8), digiemu boot/settle
+  (`dsp_running=2`), first hardware pass working. CPU/DSP/dB headroom not yet
+  formally measured.
+
 ## 3.0b — TONE+FX boot splash
 
 Packages: `core-dn1-2.0a`, `tonefx-3.0b`.

@@ -1,3 +1,4 @@
 # Never commit firmware.
 *.syx
 *.bin
+testout/
