@@ -33,7 +33,7 @@ the effect is at neutral.
 
 ## The suite
 
-**One file is the whole suite:** [`elemods/tonefx-3.1h.elemod`](elemods/) bundles
+**One file is the whole suite:** [`elemods/tonefx-3.1i.elemod`](elemods/) bundles
 every mod below into a single elekloader mod, so it **combines with your other
 mods**. It does **not** include the required core — install `core-dn1-2.0a.elemod`
 too (elekloader provides it), plus anything else you use.
@@ -62,7 +62,7 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
    builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock `.syx`, then **+ Install from file…**
    and pick `core-dn1-2.0a.elemod` (the required core; elekloader ships it) and
-   `tonefx-3.1h.elemod` (the whole suite). Add any of your other mods too.
+   `tonefx-3.1i.elemod` (the whole suite). Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
    press **YES** on the unit and do not power off until it finishes.
@@ -71,12 +71,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.1h
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.1i
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.1h
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.1i
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -178,6 +178,10 @@ untouched. Approximate instructions per active stereo frame (32 frames/block,
 
 Turn off the pages you are not using; each true-bypasses. Full ledger in
 [`docs/OPTIMIZATION.md`](docs/OPTIMIZATION.md).
+
+**Output ceiling:** a final soft limiter keeps the master mix below the 24-bit
+full scale (transparent below ~-2.5 dBFS, asymptotic max ~-0.7 dBFS), so a hot
+flanger-feedback / pitch-shift / drive setting cannot hard-clip.
 
 ### Load — yours to manage
 

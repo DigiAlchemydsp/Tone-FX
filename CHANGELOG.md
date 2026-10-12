@@ -1,5 +1,25 @@
 # Changelog
 
+## 3.1i — output ceiling, store guard, smoother ratios
+
+Packages: `core-dn1-2.0a`, `tonefx-3.1i`.
+
+- **Output ceiling** (`digictl_limit_out`, last render stage): a cheap soft
+  limiter that keeps the master mix below the 24-bit full scale — transparent
+  below ~-2.5 dBFS, asymptotic max ~-0.7 dBFS. A hot flanger-feedback / pitch
+  / drive setting can no longer reach hard clipping. The flanger feedback write
+  is clamped too; crush/fold already clamp their own output.
+- **Stock events can no longer move our params.** The per-pattern sync now
+  adopts the block **only if it still carries the `"DGX1"` magic**; a stock
+  write into that memory is reclaimed instead of read. This fixes the reported
+  **TILT/EQ jumping when PAGE / other keys are pressed**.
+- **Bounds fix:** the encoder accumulator array is now 10 entries (was 9) with
+  an encoder-id bounds check — index 9 used to write out of bounds.
+- **Smoother ratios:** the pitch-shift depth→ratio index now glides
+  (`wv_shf_dep`) instead of stepping.
+- Verified: compiles clean (`.run 20904`, `.bss 25270`, imports nothing), link
+  byte-verified, digiemu boot/settle (`dsp_running=2`) with all six pages.
+
 ## 3.1h — WAVE two pages, true bypass, page art
 
 Packages: `core-dn1-2.0a`, `tonefx-3.1h`.

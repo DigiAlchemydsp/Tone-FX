@@ -5,7 +5,7 @@ optimization methods used (and why), what is repurposed from the stock OS and
 from RingTone, and the RAM / flash / headroom ledger. This is the technical
 companion to `HANDOFF.md`; `DSP.md` is the address/architecture reference.
 
-Current package: `tonefx 3.1h` (`.run 20528`, `.bss 25262`).
+Current package: `tonefx 3.1i` (`.run 20904`, `.bss 25270`).
 
 ## 1. Where the code runs
 
@@ -163,7 +163,13 @@ Ordered roughly by how much they bought.
     Kept at `-O2`: `-O3` nearly doubles the code (or +28 % without loop
     distribution) for an unmeasured cycle gain, and unrolling reintroduces a
     `memset` dependency the no-libc build cannot satisfy.
-14. **Six passes over the buffer (identified, not yet fused).** Today ring, EQ,
+14. **Output ceiling (`digictl_limit_out`, order 64).** A cheap soft limiter on
+    the final mix: below a knee (~-2.5 dBFS) it is transparent; above it the
+    excess is halved and hard-capped at ~-0.7 dBFS, so a hot flanger-feedback /
+    pitch-shift / drive setting never reaches 24-bit clipping (0x7fffff).
+    `digicrush`'s drive and `digifold` already clamp their own output; the
+    flanger feedback write is clamped at the top of the delay loop too.
+15. **Six passes over the buffer (identified, not yet fused).** Today ring, EQ,
     crush, fold, wave and meter each loop the 32 frames, so each frame is
     loaded/stored ~6 times. A single fused `tonefx_master()` loop (load L/R
     once, run the stages inline, store once) is the next big win — see §8.
@@ -227,7 +233,7 @@ Pending:
 
 ## 8. Future footprint work
 
-1. **Fuse the six master passes** into one loop (§4.14): order-of-magnitude
+1. **Fuse the six master passes** into one loop (§4.15): order-of-magnitude
    fewer loads/stores per frame.
 2. **Use the EMAC** for the Q15 multiplies (`dn_mul15`/`dn_mul14` are two muls +
    shifts; the EMAC does an exact 32×32→64 MAC in one op). The core already
