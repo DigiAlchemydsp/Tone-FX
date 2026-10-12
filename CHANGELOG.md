@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.2b — separate WAVE pitch/stereo depths, split fold from crush
+
+Packages: `core-dn1-2.0a`, `tonefx-3.2b`.
+
+- **Fix:** on the PERFORM page the pitch and stereo pads (and encoders D/E)
+  shared one WAVE depth, and the fold/crush pads drove both amounts together.
+- **WAVE now has two depths:** `digiwave_pdepth` (PITCH) and `digiwave_sdepth`
+  (STEREO), replacing the single `digiwave_depth`. The PITCH/STEREO pages'
+  encoder **F**, the PERFORM **D/E** encoders and **CC 27** each edit only their
+  own group's depth, so the two effects are independent.
+- **Trigs are one block per engine:** `1 2 9 10` ring, `3 4` **fold only**,
+  `11 12` **crush only**, `5 6 13 14` pitch, `7 8 15 16` stereo. Fold and crush
+  have two pads each (intensities 2 and 4); the four-pad blocks keep 1–4.
+- **Per-pattern store v8 / 25 params** (adds `digiwave_pdepth`,
+  `digiwave_sdepth`; an older v7 block adopts the live values). `digictl` 2.2.
+- Verified: compiles clean (`.run 22722`, `.bss 25390`, imports nothing), link
+  byte-verified, digiemu boot/settle with all seven pages, and a live-audio
+  check — fold `0→63` and crush `0→63` each move alone, pitch `64→79` and
+  stereo `64→111` are independent, ring `51→70→51`; store v8 and the MIDI-CC
+  regressions pass.
+
 ## 3.2a — PERFORM page (performance controls)
 
 Packages: `core-dn1-2.0a`, `tonefx-3.2a`.

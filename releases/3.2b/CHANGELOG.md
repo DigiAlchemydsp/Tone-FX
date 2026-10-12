@@ -1,0 +1,290 @@
+# Changelog
+
+## 3.2b — separate WAVE pitch/stereo depths, split fold from crush
+
+Packages: `core-dn1-2.0a`, `tonefx-3.2b`.
+
+- **Fix:** on the PERFORM page the pitch and stereo pads (and encoders D/E)
+  shared one WAVE depth, and the fold/crush pads drove both amounts together.
+- **WAVE now has two depths:** `digiwave_pdepth` (PITCH) and `digiwave_sdepth`
+  (STEREO), replacing the single `digiwave_depth`. The PITCH/STEREO pages'
+  encoder **F**, the PERFORM **D/E** encoders and **CC 27** each edit only their
+  own group's depth, so the two effects are independent.
+- **Trigs are one block per engine:** `1 2 9 10` ring, `3 4` **fold only**,
+  `11 12` **crush only**, `5 6 13 14` pitch, `7 8 15 16` stereo. Fold and crush
+  have two pads each (intensities 2 and 4); the four-pad blocks keep 1–4.
+- **Per-pattern store v8 / 25 params** (adds `digiwave_pdepth`,
+  `digiwave_sdepth`; an older v7 block adopts the live values). `digictl` 2.2.
+- Verified: compiles clean (`.run 22722`, `.bss 25390`, imports nothing), link
+  byte-verified, digiemu boot/settle with all seven pages, and a live-audio
+  check — fold `0→63` and crush `0→63` each move alone, pitch `64→79` and
+  stereo `64→111` are independent, ring `51→70→51`; store v8 and the MIDI-CC
+  regressions pass.
+
+## 3.2a — PERFORM page (performance controls)
+
+Packages: `core-dn1-2.0a`, `tonefx-3.2a`.
+
+- **New master page `PERFORM` (kind 6)** — a **static** page (no animation, no
+  added CPU) reached with **UP** from any of the six DIGI pages (**UP** again
+  returns it to the page you came from); **LEFT / RIGHT** still cycle onto it.
+- **One depth per FX block on the encoders:** A RING depth, B FOLD amount,
+  C CRUSH amount, D WAVE pitch depth, E WAVE stereo depth, F EQ low,
+  G EQ high, H WAVE speed. Settable with the pattern like every DIGI control.
+- **The 16 trig keys are momentary performance pads** in four blocks of four
+  increasing intensities: **1 2 9 10** ring, **3 4 11 12** fold+crush,
+  **5 6 13 14** pitch, **7 8 15 16** pan. A held pad saves the block's depth /
+  on-state, turns it on and ramps the depth up to `base + (127-base)*intensity/4`
+  (`pf_apply`, one step per audio block in `ev_render_in`); release ramps back to
+  the saved pattern value and restores on/off. The pad **never writes the
+  per-pattern store**, so the saved value is always the resting position.
+- **`digictl` 2.1.** Per-pattern store **unchanged**: `"DGX1"` **v7 / 24
+  params**; no new MIDI CC.
+- **Not done:** the trig keys do not yet light yellow (needs the Digitone LED
+  driver; a planned follow-up).
+- Verified: compiles clean (`.run 22596`, `.bss 25366`, imports nothing), link
+  byte-verified (sections 2/4/5/6/7/8; ~82 KB RAM spare, ~1.69 MB flash spare),
+  digiemu boot/settle (`dsp_running=2`) with all seven pages
+  (`kinds=[16,15,17,0,1,2,3,4,5,6]`), plus a **live-audio** check (ring 51→70→51,
+  fold/crush 0→31→0) and the store / MIDI-CC regressions.
+
+## 3.1i — output ceiling, store guard, smoother ratios
+
+Packages: `core-dn1-2.0a`, `tonefx-3.1i`.
+
+- **Output ceiling** (`digictl_limit_out`, last render stage): a cheap soft
+  limiter that keeps the master mix below the 24-bit full scale — transparent
+  below ~-2.5 dBFS, asymptotic max ~-0.7 dBFS. A hot flanger-feedback / pitch
+  / drive setting can no longer reach hard clipping. The flanger feedback write
+  is clamped too; crush/fold already clamp their own output.
+- **Stock events can no longer move our params.** The per-pattern sync now
+  adopts the block **only if it still carries the `"DGX1"` magic**; a stock
+  write into that memory is reclaimed instead of read. This fixes the reported
+  **TILT/EQ jumping when PAGE / other keys are pressed**.
+- **Bounds fix:** the encoder accumulator array is now 10 entries (was 9) with
+  an encoder-id bounds check — index 9 used to write out of bounds.
+- **Smoother ratios:** the pitch-shift depth→ratio index now glides
+  (`wv_shf_dep`) instead of stepping.
+- Verified: compiles clean (`.run 20904`, `.bss 25270`, imports nothing), link
+  byte-verified, digiemu boot/settle (`dsp_running=2`) with all six pages.
+
+## 3.1h — WAVE two pages, true bypass, page art
+
+Packages: `core-dn1-2.0a`, `tonefx-3.1h`.
+
+- **WAVE split into two pages**: **PITCH** (WOB / SHFT) and **STEREO** (FLAN /
+  PAN / WIDE), each with its **own mode** over one shared delay engine. Speed /
+  depth are shared; mix / feedback are STEREO (FLAN). Flanger feedback is capped
+  at **75 %** to avoid self-oscillation.
+- **Click-free true bypass per section**: each effect ramps its amount to the
+  neutral value, then stops processing entirely — exact passthrough at zero
+  per-sample cost. Turning a page off is clean and frees its CPU.
+- **Page art**: frameless animated graphics in the leftmost third that **collapse
+  to a line at neutral** — CRUSH a scrolling waveform quantised / held / clipped
+  by the mode; PITCH **two vertical lines that wobble and intertwine at more
+  nodes with depth/speed**; STEREO a ripple (FLAN), a split (PAN) or a spread
+  (WIDE).
+- **Pitch shifter**: crossfade collapsed to one multiply per channel.
+- **Fixes**: Wobble/Flanger clicks (the swept delay is now fractional,
+  interpolated and clamped — it could step by whole samples and wrap negative);
+  Crush bit mapping (amount 0 is now identity, 24 bits).
+- **Store**: per-pattern block now **`"DGX1"` v7 (24 params)**. New MIDI CC
+  **20–31**.
+- Verified: compiles clean (`.run 20528`, `.bss 25262`, imports nothing), link
+  byte-verified, digiemu boot/settle (`dsp_running=2`) with all six pages.
+
+## 3.1c — Crunch/Redux + Wave modulation (click fix, CPU opt)
+
+Packages: `core-dn1-2.0a`, `tonefx-3.1c`.
+
+- **New master insert `digicrush` (Crunch / Redux)** — one stateless stage at a
+  time: **BITS** (bit-reduce to 16…4 bits, optional TPDF dither), **SR**
+  (sample-and-hold decimator) and **CRUNCH** (Q8 gain into a hard clip). New
+  **DIGI CRUSH** page (kind 3): A on/off, D mode, E amount, F tune.
+- **New master insert `digiwave`** — one modulation insert, one page, five
+  modes over a single shared delay line and one LFO: **WOB** (pitch
+  wobble/vibrato), **SHFT** (pitch shift, ±12 st), **FLAN** (flanger),
+  **PAN** (autopan), **WIDE** (stereo width). New **DIGI WAVE** page
+  (kind 4): A on/off, D mode, E speed, F depth, G mix, H feedback.
+- **Click fix**: the swept delay in WOB/FLAN is now **fractional,
+  interpolated and clamped**; before, it stepped by whole samples and could go
+  negative (wrapping the read index to garbage) — the audible clicks.
+- **SHFT CPU**: read position computed once per grain and shared by L/R, the
+  crossfade window derived (`w1 = 2^15-1-w0`), a guard sample dropping index
+  masks; the LFO is block-rate. Exact-bypass guards on every mode.
+- **`digictl`**: pages 3/4 wired, encoders, per-pattern store bumped to
+  **"DGX1" v6 (22 params)**, new MIDI CC **20–29**. Signal order is
+  **ring(50) → EQ(55) → crush(57) → fold(60) → wave(62) → meter(65)**.
+- Verified: compiles clean (`.run 18880`, `.bss 25222`, imports nothing), link
+  byte-verified (sections 2/4/5/6/7/8), digiemu boot/settle
+  (`dsp_running=2`), first hardware pass working. CPU/DSP/dB headroom not yet
+  formally measured.
+
+## 3.0b — TONE+FX boot splash
+
+Packages: `core-dn1-2.0a`, `tonefx-3.0b`.
+
+- **The TONE+FX boot splash (`tonesplash`) is bundled into the suite**, so the
+  splash and the FX ship as **one elemod**. It draws an animated TONE+FX wordmark
+  at the intro, picking one of three animations at random each boot (accelerated
+  particles, a laser trace, or a laser draw + spark bloom). Inert once the UI
+  takes over.
+- Everything else is unchanged from 3.0a.
+
+## 3.0a — three pages, fold modes, shelf EQ
+
+Packages: `core-dn1-2.0a`, `tonefx-3.0a` (digimeter, digieq, digiring,
+digifold, digictl).
+
+- **Three master pages** (`FUNC+LFO`; `LEFT`/`RIGHT` or the on-screen `< >`
+  rotate the whole list): **RING**, **FOLD**, **TILT**. The stock top status
+  bar (pattern name, tempo, …) stays above every page.
+  - **RING** — **A** on/off, **E** depth, **F** frequency; a centred ring
+    animation, the depth/frequency bars on the right and the values bottom-left.
+  - **FOLD** — **A** on/off, **D** fold type, **E/F/G/H** amount; the spiral
+    (left), the big mode title, and the amount as a vertical slider next to the
+    L/R meter.
+  - **TILT** — **A** on/off, **E** low shelf, **H** high shelf; a bent low/high
+    response curve.
+- **Fold type** is a continuous **0–127** knob spread over four modes — **CLEAN**
+  (36% fold), **MUD** (full fold), **DIST** (36% fold + hard-clip overdrive) and
+  **TRSH** (full fold + overdrive) — interpolated between modes and capped at
+  CLEAN/TRSH. The overdrive is a stateless saturation, so CLEAN/MUD cost nothing
+  extra per sample.
+- **digieq** is back to independent low/high shelves (`digieq_lo` / `digieq_hi`).
+- **Meter** moved to the FOLD page; fixed the occasional stuck-at-0 (the master
+  view now redraws every tick), and it is now on **MIDI CC `68`**.
+- **Navigation** cleanup: `LEFT`/`RIGHT` rotates the whole master page vector and
+  no longer stalls.
+- **MIDI CC** now covers every FX parameter: RING `8`/`11`/`36`, FOLD
+  `37`/`40`/`41`, EQ `67`/`69`/`96`, meter `68`. The per-pattern store is v5
+  (12 params).
+
+## 2.3c — per-voice filter removed
+
+Packages: `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.1`, `digiring-1.1`,
+`digifold-1.1`, `digictl-1.9`.
+
+- **The per-voice filter (`digifilter`) is removed from the suite.** Tone+FX is
+  now the master **ring → EQ → fold** chain plus the output meter, with **two**
+  master pages: **DIGI FX** and **DIGI FOLD / EQ**. The filter was
+  experimental/future work; it is parked in the source repo's
+  `filter-and-digimachine` branch and is not part of Tone+FX.
+- **digictl 1.9**: drops the DIGI FILTER page and the filter MIDI CCs
+  (`CC97` / `CC100` / `CC101` / `CC103` are free again); the per-pattern store is
+  now 12 params (version 3). The ring / EQ / fold / meter controls are unchanged.
+- Everything else is unchanged from 2.3b.
+
+## 2.3b — stock encoder feel
+
+Packages: `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.1`, `digiring-1.1`,
+`digifold-1.1`, `digifilter-1.0`, `digictl-1.8`.
+
+- **digictl 1.8**: the DIGI FX pages now step **one value per encoder detent**,
+  like the stock parameters. The Digitone panel sends **4 wire counts per
+  detent** and the stock 0..127 params move **one step per detent**; the old code
+  required 16 counts per step — that is the encoder driver's dead-zone **startup**
+  (counts before the first move), not the per-step size — so a full 0..127 sweep
+  took ~4x too many turns. The driver's own fast-turn acceleration is unchanged
+  (the flushed delta is clamped to +/-30), so a fast turn still moves several
+  steps. Emulator-verified: `+4` -> `+1`, `+30` -> `+7`, four `+1` -> `+1`.
+- Everything else is unchanged from 2.3a.
+
+## 2.3a — MIDI CC control
+
+Packages: `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.1`, `digiring-1.1`,
+`digifold-1.1`, `digifilter-1.0`, `digictl-1.7`.
+
+- **digictl 1.7**: the DIGI FX respond to **incoming MIDI CC**, like the stock
+  parameters, so they can be played and sequenced from an external
+  controller/DAW. It hooks the stock central CC router (`0x400ED94E`); only CC
+  numbers the Digitone does not already use are taken.
+  - RING — depth `CC8`, on/off `CC11`, rate `CC36`
+  - FOLD — on/off `CC37`, amount `CC40`
+  - EQ — LOW on/off `CC67`, HIGH on/off `CC68`, LOW `CC69`, HIGH `CC96`
+  - FILTER — on/off `CC97`, mode `CC100`, freq `CC101`, reso `CC103`
+  - A CC move is saved with the pattern (it marks the per-pattern store dirty).
+- **Packaging:** the suite ships as a **single format-2 mod `tonefx-2.3a.elemod`**
+  — `digictl` plus every FX mod, combined, and **without the core**, so it
+  combines with `core-dn1-2.0a.elemod` (required) and any of your other mods.
+  `tools/build.*` patch the core and `tonefx` together.
+- Everything else is unchanged from 2.2a.
+- Emulator-tested (`dn1-2.2f`): the patched router path applies all CCs and sets
+  the dirty flag (`tests/digiemu_midi_cc.py`). The raw MIDI-receive path is
+  hardware-validated — digiemu has no MIDI input model.
+
+## 2.2a — per-pattern settings, stock-scaled controls
+
+Packages: `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.1`, `digiring-1.1`,
+`digifold-1.1`, `digifilter-1.0`, `digictl-1.6`.
+
+### Pattern persistence (digictl 1.6)
+
+- The 17 FX parameters are now stored **per pattern** inside the saved pattern
+  data, so they follow a **pattern switch / reload** and travel with a
+  **project save / power-off**, like stock parameters.
+- Each pattern's storage struct (0x1611D bytes, `patternStorage_v11_t`) leaves an
+  unused 64-byte block on its four MIDI tracks (`track_t+0x100`). `digictl` keeps
+  a **`"DGX1"` v2** block there (17 int16 values). It loads the block into the
+  live parameters at boot and on a pattern change, writes them back on a page
+  edit, and adopts a block the OS rewrote (a pattern reload). A fresh pattern
+  adopts the current values, so the sound never jumps.
+- See `docs/PATTERN-STORAGE.md` in the source repo for the measured layout.
+
+### Encoder behaviour
+
+- Every master-page parameter is now **0..127** and moves **one step per
+  notch** — the stock convention — instead of *1/127 of an ad-hoc range*.
+  The DSP scales 0..127 internally: ring depth/rate, fold amount, EQ gains
+  (EQ centre **64 = flat**). `digictl`'s OS-style accumulation (one step per 16
+  counts, direction reset) is unchanged, so the OS's fast-turn acceleration is
+  still honoured. The **DIGI FILTER** page was already 0..127.
+- Defaults kept: ring depth 51 / rate 6, EQ low 33 / high 111, fold 0.
+- `digiring 1.1`, `digieq 1.1`, `digifold 1.1` carry the new 0..127 scale;
+  `digimeter` and `digifilter` are unchanged from 2.1h.
+
+### UI
+
+- **DIGI FOLD / EQ:** the title no longer clips the top row, and the leftover
+  `MOD …` readout was removed (the LFO-destination bridge stays **parked** in
+  the code, off by default). No new key or encoder is taken.
+
+### Tested
+
+- **Real hardware** (a Digitone mk1): stress-tested with the full suite — the
+  build boots and holds up under long, busy patterns, and the per-pattern
+  settings survive pattern switches, reloads and power cycles.
+- Emulator (`dn1-2.2d`, test tags 2.2a…2.2d): boots and settles,
+  `dsp_running=2`; the master pages and the live render run with 0 faults; the
+  fold/EQ page draws cleanly; the settings persist per pattern
+  (`digiemu_pattern_store.py`).
+
+### Known bugs / future fixes
+
+- **Slider behaviour:** make the faders/bars match the stock parameter widgets
+  more closely (EQ fill from the centre, a shared smoothing, value readouts).
+- **Encoder acceleration:** match the stock fast-turn curve per parameter
+  (currently one step per notch plus whatever acceleration the OS delivers).
+- **LFO destinations:** driving the DIGI parameters from a track LFO is
+  **parked** — the bridge is in the code but off, with no page control.
+- **UI improvements:** consistent titles/units across the three pages and
+  per-parameter value readouts.
+
+## 2.1h — first Tone+FX suite release
+
+Packages: `core-dn1-2.0a`, `digimeter-1.1`, `digieq-1.0`, `digiring-1.0`,
+`digifold-1.0`, `digifilter-1.0`, `digictl-1.3`.
+
+- **Three master pages** (`FUNC+LFO`; `LEFT`/`RIGHT` rotate): **DIGI FX**
+  (ring), **DIGI FILTER**, **DIGI FOLD / EQ**.
+- **digifilter**: per-voice `BP / BP2 / COMB / TRASH`, routed per voice with a
+  **4-voice cap**; simpler integer-delay comb; coefficients once per block,
+  silent voices skipped.
+- **digieq**: independent low/high band enables; full-precision gain (noise fix).
+- **digiring**: interpolated carrier, full-precision multiply (noise fix).
+- **digifold**: exact bypass at amount 0; spiral display for the fold amount.
+- **digictl**: every encoder/slider moves **1/127 of its range per step**
+  (uniform speed); the FIRQ/RES curve and stock keys (PAGE etc.) untouched;
+  meter runs unconditionally.
+- Emulator-tested (boot, settle, `dsp_running=2`; UI + live-audio render, 0
+  faults). Not yet a hardware audio pass.

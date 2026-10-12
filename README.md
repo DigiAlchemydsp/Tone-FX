@@ -39,7 +39,7 @@ is reached with **UP** from any of the other six.
 
 ## The suite
 
-**One file is the whole suite:** [`elemods/tonefx-3.2a.elemod`](elemods/) bundles
+**One file is the whole suite:** [`elemods/tonefx-3.2b.elemod`](elemods/) bundles
 every mod below into a single elekloader mod, so it **combines with your other
 mods**. It does **not** include the required core — install `core-dn1-2.0a.elemod`
 too (elekloader provides it), plus anything else you use.
@@ -69,7 +69,7 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
    builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock `.syx`, then **+ Install from file…**
    and pick `core-dn1-2.0a.elemod` (the required core; elekloader ships it) and
-   `tonefx-3.2a.elemod` (the whole suite). Add any of your other mods too.
+   `tonefx-3.2b.elemod` (the whole suite). Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
    press **YES** on the unit and do not power off until it finishes.
@@ -78,12 +78,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.2a
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.2b
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.2a
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.2b
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -170,38 +170,39 @@ from any of the six DIGI pages to reach it (**UP** again returns), or cycle onto
 it with **LEFT / RIGHT**. It draws no animation, so it adds no CPU while it is
 open.
 
-The **eight encoders set one depth per FX block** (0–127, one step per notch,
-saved with the pattern like every other DIGI control):
+The **eight encoders set one depth per FX engine** (0–127, one step per notch,
+saved with the pattern like every other DIGI control). Every engine has its own
+depth — fold and crush are separate, and the WAVE engine has an independent
+pitch depth and stereo depth:
 
-| encoder | block depth | encoder | block depth |
+| encoder | engine depth | encoder | engine depth |
 |---|---|---|---|
 | **A** | RING depth | **E** | WAVE stereo depth |
 | **B** | FOLD amount | **F** | EQ low shelf |
 | **C** | CRUSH amount | **G** | EQ high shelf |
 | **D** | WAVE pitch depth | **H** | WAVE speed |
 
-**The 16 trig keys are momentary performance pads.** They are grouped in four
-blocks of four pads; within a block the four pads are four increasing
-intensities (the first is the smallest push, the fourth the largest):
+**The 16 trig keys are momentary performance pads**, one block per engine. A
+block of four pads is four increasing intensities (1–4); the two-pad fold and
+crush blocks use intensities **2 and 4**:
 
 | trigs | block | what the pad drives |
 |---|---|---|
 | **1 2 9 10** | **RING** | ring depth |
-| **3 4 11 12** | **FOLD + CRUSH** | fold amount and crush amount together |
-| **5 6 13 14** | **PITCH** | the WAVE PITCH group's depth |
-| **7 8 15 16** | **PAN** | the WAVE STEREO group's depth |
+| **3 4** | **FOLD** | fold amount |
+| **11 12** | **CRUSH** | crush amount |
+| **5 6 13 14** | **PITCH** | the WAVE pitch depth |
+| **7 8 15 16** | **STEREO** | the WAVE stereo depth |
 
-**Hold a pad:** it saves the block's resting value (and its on/off), turns the
-block on, and **ramps its depth up** to `resting + (127 - resting) * intensity
+**Hold a pad:** it saves the engine's resting value (and its on/off), turns the
+engine on, and **ramps its depth up** to `resting + (127 - resting) * intensity
 / 4`, where it holds. **Release:** the depth ramps back to the pattern value and
 the on/off is restored. A pad **never writes the per-pattern store**, so the
 saved value is always the resting position — releasing, leaving the page, or
 even saving the project mid-pad leaves your values intact. The ramp is one cheap
 step per audio block, so it is smooth and click-free and costs almost nothing
-while idle.
-
-> D and E both move the engine's single shared WAVE depth (each also selects its
-> group as the active one); the pitch and pan pads share that depth the same way.
+while idle. Because each engine has its own depth, the pads never fight: a pitch
+pad cannot move the stereo depth, and a fold pad cannot move crush.
 
 ## CPU footprint
 
@@ -293,9 +294,6 @@ Tracked as they come up; nothing here blocks normal use.
   hi-fi option, is wanted.
 - **WOB / SHFT have no dry-wet:** MIX is used by FLAN only. Exposing a blend
   (a MIX on WOB/SHFT) is wanted so they dial in like the flanger.
-- **PERFORM D and E share one WAVE depth:** the engine has a single depth for
-  both WAVE pages. Making the pitch and stereo page depths independent is a
-  wanted fix (a per-pattern store bump).
 - **PERFORM trig LEDs:** the pads do not yet light the trig keys (yellow) — a
   planned follow-up, once the Digitone LED driver is reverse-engineered.
 - **Configured-MIDI-track store risk:** the per-pattern block lives in an unused
