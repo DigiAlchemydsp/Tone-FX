@@ -29,6 +29,20 @@ use.
   CC.
 - Not yet done: the trig keys do not light yellow (planned follow-up).
 
+## CPU headroom
+
+The Digitone shares its CPU/DSP between the FM voices and these effects, so
+leave headroom for the synth:
+
+- **Turn off the filter on tracks you are not using** (set the track's filter
+  **type to 0**) — an idle track's filter still costs CPU every block.
+- **A busy pattern has less CPU headroom:** back off RING depth / FOLD amount /
+  CRUSH / WAVE, and turn off the pages you are not using (each true-bypasses).
+- **The animated pages are for setting up.** Their redraw costs CPU while the
+  page is on screen, so dial the effect in and **move on** (press **UP** to the
+  static PERFORM page, or go to any internal page). Leaving a DIGI page stops
+  its redraw.
+
 ## Tested
 
 - Compiles clean (`.run 22596`, `.bss 25366`, imports nothing); link

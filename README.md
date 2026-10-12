@@ -235,9 +235,21 @@ flanger-feedback / pitch-shift / drive setting cannot hard-clip.
 ### Load — yours to manage
 
 The Digitone's **CPU and DSP are shared** between the internal FM voices and
-these added effects. Running everything at once **can stress the CPU/DSP** and
-cause dropouts on busy patterns. Manage it: turn off what you are not using and
-back off RING depth / FOLD amount / CRUSH / WAVE on busy patterns.
+these added effects, so Tone+FX is a budget you spend: it is happiest when you
+leave headroom for the synth itself. A few habits keep it clean on a busy unit:
+
+- **Turn off the filter on tracks you are not using** — set the track's
+  **filter type to 0 (off)**. An idle track's filter still costs CPU for its
+  voices every block; freeing it buys that time back for the master FX.
+- **A busy pattern has less CPU headroom.** More voices, notes and parameter
+  locks on the FM engine leave less for the master FX. On busy patterns, back
+  off RING depth / FOLD amount / CRUSH / WAVE, and turn off the pages you are
+  not using (each true-bypasses to ~0 cost).
+- **The animated panels are for setting up, not for staying on.** The RING /
+  FOLD / TILT / CRUSH / PITCH / STEREO pages redraw every UI frame, and that
+  redraw is CPU while the page is on screen. Dial the effect in, then **move on**
+  — press **UP** to the static **PERFORM** page, or go to any internal page or
+  panel. Once you leave a DIGI page it stops redrawing, and that CPU comes back.
 
 ## Releases
 
