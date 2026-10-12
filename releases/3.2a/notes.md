@@ -51,4 +51,7 @@ leave headroom for the synth:
   present (`kinds=[16,15,17,0,1,2,3,4,5,6]`).
 - Live-audio check of the pads: ring `51 -> 70 -> 51`, fold/crush `0 -> 31 -> 0`;
   the per-pattern store and the MIDI-CC hook regressions pass.
-- Hardware: confirm the PERFORM page, UP navigation and the pads.
+- Hardware: **stress-tested on two Digitone mk1 units — in parallel and in
+  series — over synths, drums, vocals and master tracks (including vinyl)**, plus
+  a single unit. See the README's "Known bugs / future fixes" for the tracked
+  follow-ups.

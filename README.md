@@ -270,24 +270,56 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 
 Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all seven
 pages, and a live-audio check of the PERFORM page: an encoder raises the pattern
-value, a held trig ramps its block and release restores it) and on hardware (a
-Digitone mk1). Current package version is in
-[`CHANGELOG.md`](CHANGELOG.md). No firmware is included or distributed here; the
-`.elemod`s carry only our own code and patch sites (byte-checked against your
-stock file at build time).
+value, a held trig ramps its block and release restores it). On hardware it is
+**stress-tested on two Digitone mk1 units — in parallel and in series — over
+synths, drums, vocals and master tracks (including vinyl)**, as well as on a
+single unit. Current package version is in [`CHANGELOG.md`](CHANGELOG.md). No
+firmware is included or distributed here; the `.elemod`s carry only our own code
+and patch sites (byte-checked against your stock file at build time).
 
 ## Known bugs / future fixes
 
-- **Slider behaviour:** the page sliders/bars should track the stock parameter
-  widgets more closely.
-- **Encoder acceleration:** the base rate matches stock; the fast-turn curve is
-  whatever the OS driver delivers.
-- **LFO destinations:** driving the DIGI parameters from a track LFO is parked.
+Tracked as they come up; nothing here blocks normal use.
+
+**Bugs / rough edges we want fixed**
+
+- **Slider feel:** the page sliders and value bars should track the stock
+  parameter widgets more closely.
+- **Encoder acceleration:** the base rate is stock (one step per detent); the
+  fast-turn curve is whatever the OS driver delivers, so a fast spin can feel
+  different from a stock parameter.
 - **SHFT quality:** the pitch shifter is deliberately lightweight (linear
-  interpolation, ~10 ms grains) — lo-fi.
-- **MIX** is used by FLAN only; WOB and SHFT are wet-only.
-- **CC 20–31** are not yet checked against the stock CC table.
-- **PERFORM trig LEDs:** the momentary pads do not yet light the trig keys (a
-  planned follow-up, after the Digitone LED driver is reverse-engineered).
-- **CPU/DSP load** is the user's to manage; a formal headroom measurement is
-  pending.
+  interpolation, ~10 ms grains) and a little warbly — a quality pass, or a
+  hi-fi option, is wanted.
+- **WOB / SHFT have no dry-wet:** MIX is used by FLAN only. Exposing a blend
+  (a MIX on WOB/SHFT) is wanted so they dial in like the flanger.
+- **PERFORM D and E share one WAVE depth:** the engine has a single depth for
+  both WAVE pages. Making the pitch and stereo page depths independent is a
+  wanted fix (a per-pattern store bump).
+- **PERFORM trig LEDs:** the pads do not yet light the trig keys (yellow) — a
+  planned follow-up, once the Digitone LED driver is reverse-engineered.
+- **Configured-MIDI-track store risk:** the per-pattern block lives in an unused
+  MIDI-track area that was zero on *unconfigured* tracks; a magic guard protects
+  it, but if a configured MIDI track is found to write there, the block must move.
+- **Power-off persistence** rides on the OS saving the temp project; a project
+  round-trip is confirmed per pattern in the emulator, not yet exhaustively on
+  hardware.
+
+**Wanted next (features / quality)**
+
+- **LFO destinations:** drive the DIGI parameters from a track LFO (a bridge is
+  parked in the source; it needs the stock destination table).
+- **Pre-FX routing:** an option to place the chain before the sends/return
+  effects instead of after them.
+- **Fuse the six master passes** into one loop — order-of-magnitude fewer
+  loads/stores per frame, real CPU back.
+- **Redraw gating:** only redraw an animated page while it is visible, and fold
+  the meter into the fused loop.
+- **More PERFORM pads:** pads for EQ, WAVE speed and CRUSH tune, and optionally
+  tempo-synced ramp shapes.
+- **Measured headroom:** render-worst / deadline margin and peak/RMS dB with the
+  FX off vs on, so the load advice is measured rather than estimated.
+- **CC 20–31:** verify against the stock CC table (`0x4018D104`) before
+  sequencing WAVE/CRUSH from a DAW.
+- **Output ceiling:** confirm it is inaudible at normal levels and matched to the
+  24-bit full scale.
