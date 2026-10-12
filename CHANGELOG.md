@@ -1,5 +1,32 @@
 # Changelog
 
+## 3.2a — PERFORM page (performance controls)
+
+Packages: `core-dn1-2.0a`, `tonefx-3.2a`.
+
+- **New master page `PERFORM` (kind 6)** — a **static** page (no animation, no
+  added CPU) reached with **UP** from any of the six DIGI pages (**UP** again
+  returns it to the page you came from); **LEFT / RIGHT** still cycle onto it.
+- **One depth per FX block on the encoders:** A RING depth, B FOLD amount,
+  C CRUSH amount, D WAVE pitch depth, E WAVE stereo depth, F EQ low,
+  G EQ high, H WAVE speed. Settable with the pattern like every DIGI control.
+- **The 16 trig keys are momentary performance pads** in four blocks of four
+  increasing intensities: **1 2 9 10** ring, **3 4 11 12** fold+crush,
+  **5 6 13 14** pitch, **7 8 15 16** pan. A held pad saves the block's depth /
+  on-state, turns it on and ramps the depth up to `base + (127-base)*intensity/4`
+  (`pf_apply`, one step per audio block in `ev_render_in`); release ramps back to
+  the saved pattern value and restores on/off. The pad **never writes the
+  per-pattern store**, so the saved value is always the resting position.
+- **`digictl` 2.1.** Per-pattern store **unchanged**: `"DGX1"` **v7 / 24
+  params**; no new MIDI CC.
+- **Not done:** the trig keys do not yet light yellow (needs the Digitone LED
+  driver; a planned follow-up).
+- Verified: compiles clean (`.run 22596`, `.bss 25366`, imports nothing), link
+  byte-verified (sections 2/4/5/6/7/8; ~82 KB RAM spare, ~1.69 MB flash spare),
+  digiemu boot/settle (`dsp_running=2`) with all seven pages
+  (`kinds=[16,15,17,0,1,2,3,4,5,6]`), plus a **live-audio** check (ring 51→70→51,
+  fold/crush 0→31→0) and the store / MIDI-CC regressions.
+
 ## 3.1i — output ceiling, store guard, smoother ratios
 
 Packages: `core-dn1-2.0a`, `tonefx-3.1i`.

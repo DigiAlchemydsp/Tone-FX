@@ -7,7 +7,8 @@ Tone+FX is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 a low/high-shelf EQ, a Crunch/Redux lo-fi stage, a wavefolder with four fold
 modes (plus an internal overdrive), a modulation insert with five modes (wobble,
 pitch shift, flanger, autopan, stereo width) on two pages, output metering, a
-**six-page UI** on the master page tree and an animated TONE+FX boot splash.
+**seven-page UI** on the master page tree (with a static **PERFORM** page whose
+16 trigs are momentary performance pads) and an animated TONE+FX boot splash.
 
 This repository is **release-only**: it ships the built `.elemod` packages and
 the docs to install them. It contains **no source and no firmware**. The source
@@ -19,9 +20,10 @@ from while the older `RingTone` repo is still around.
 
 ## Pages
 
-Six master pages (**FUNC + LFO**; **LEFT / RIGHT** rotates). Each new page has a
-frameless animated graphic in the leftmost third that collapses to a line when
-the effect is at neutral.
+Seven master pages (**FUNC + LFO**; **LEFT / RIGHT** rotates). Each new FX page
+has a frameless animated graphic in the leftmost third that collapses to a line
+when the effect is at neutral; the **PERFORM** page is static (no animation) and
+is reached with **UP** from any of the other six.
 
 | RING | FOLD | TILT |
 |---|---|---|
@@ -31,9 +33,13 @@ the effect is at neutral.
 |---|---|---|
 | ![DIGI CRUSH page](Screenshots/CRUSH.png) | ![DIGI PITCH page](Screenshots/PITCH.png) | ![DIGI STEREO page](Screenshots/STEREO.png) |
 
+| PERFORM |
+|---|
+| ![PERFORM page](Screenshots/PERFORM.png) |
+
 ## The suite
 
-**One file is the whole suite:** [`elemods/tonefx-3.1i.elemod`](elemods/) bundles
+**One file is the whole suite:** [`elemods/tonefx-3.2a.elemod`](elemods/) bundles
 every mod below into a single elekloader mod, so it **combines with your other
 mods**. It does **not** include the required core — install `core-dn1-2.0a.elemod`
 too (elekloader provides it), plus anything else you use.
@@ -49,7 +55,8 @@ too (elekloader provides it), plus anything else you use.
   wobble, SHFT pitch shift) and **STEREO** (FLAN flanger, PAN autopan, WIDE
   stereo width).
 - **digictl** — the pages and all the controls; keeps the settings per pattern
-  and adds MIDI CC control.
+  and adds MIDI CC control, plus the **PERFORM** page and its momentary trig
+  pads.
 - **tonesplash** — an animated TONE+FX boot splash (one of three animations per
   boot, drawn at the intro).
 
@@ -62,7 +69,7 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
    builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock `.syx`, then **+ Install from file…**
    and pick `core-dn1-2.0a.elemod` (the required core; elekloader ships it) and
-   `tonefx-3.1i.elemod` (the whole suite). Add any of your other mods too.
+   `tonefx-3.2a.elemod` (the whole suite). Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
    press **YES** on the unit and do not power off until it finishes.
@@ -71,12 +78,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.1i
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.2a
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.1i
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.2a
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -86,10 +93,11 @@ with Transfer's legacy OS upgrade mode.
 ## Use
 
 The pages live on the **master page tree**: **FUNC + LFO** cycles the master
-pages. Tone+FX appends six of its own after the stock ones. **LEFT / RIGHT** (or
-the on-screen `<` `>` arrows) rotate the whole master page list. The stock **top
-status bar** (pattern name, tempo, …) stays visible above every page. PAGE keeps
-its stock meaning; no stock key or encoder is taken.
+pages. Tone+FX appends seven of its own after the stock ones. **LEFT / RIGHT**
+(or the on-screen `<` `>` arrows) rotate the whole master page list, and **UP**
+jumps to the **PERFORM** page from any of the other six (UP again returns). The
+stock **top status bar** (pattern name, tempo, …) stays visible above every page.
+PAGE keeps its stock meaning; no stock key or encoder is taken.
 
 | page | encoders | shows |
 |---|---|---|
@@ -99,6 +107,7 @@ its stock meaning; no stock key or encoder is taken.
 | **CRUSH** | **A** on/off · **D** mode · **E** amount · **F** tune | a waveform (left) that is quantised / held / clipped by the mode |
 | **PITCH** | **A** on/off · **D** mode · **E** speed · **F** depth | two vertical lines that wobble and intertwine |
 | **STEREO** | **A** on/off · **D** mode · **E** speed · **F** depth · **G** mix · **H** feedback | a horizontal line that ripples / splits / spreads |
+| **PERFORM** | **A** ring depth · **B** fold amount · **C** crush amount · **D** wave pitch depth · **E** wave stereo depth · **F** EQ low · **G** EQ high · **H** wave speed | a static depth readout per FX block; the trigs are momentary pads (see **Performance controls**) |
 
 Every parameter is **0–127** and moves **one step per notch** — the stock
 convention (EQ LOW/HIGH are 0–127 with **64 = flat**).
@@ -154,6 +163,46 @@ master FX.
 Signal order on the master mix is **ring → EQ → crush → fold → wave → meter**.
 Ring, EQ and fold are on by default.
 
+## Performance controls
+
+A **static** touch page — **PERFORM** — on the master page tree. Press **UP**
+from any of the six DIGI pages to reach it (**UP** again returns), or cycle onto
+it with **LEFT / RIGHT**. It draws no animation, so it adds no CPU while it is
+open.
+
+The **eight encoders set one depth per FX block** (0–127, one step per notch,
+saved with the pattern like every other DIGI control):
+
+| encoder | block depth | encoder | block depth |
+|---|---|---|---|
+| **A** | RING depth | **E** | WAVE stereo depth |
+| **B** | FOLD amount | **F** | EQ low shelf |
+| **C** | CRUSH amount | **G** | EQ high shelf |
+| **D** | WAVE pitch depth | **H** | WAVE speed |
+
+**The 16 trig keys are momentary performance pads.** They are grouped in four
+blocks of four pads; within a block the four pads are four increasing
+intensities (the first is the smallest push, the fourth the largest):
+
+| trigs | block | what the pad drives |
+|---|---|---|
+| **1 2 9 10** | **RING** | ring depth |
+| **3 4 11 12** | **FOLD + CRUSH** | fold amount and crush amount together |
+| **5 6 13 14** | **PITCH** | the WAVE PITCH group's depth |
+| **7 8 15 16** | **PAN** | the WAVE STEREO group's depth |
+
+**Hold a pad:** it saves the block's resting value (and its on/off), turns the
+block on, and **ramps its depth up** to `resting + (127 - resting) * intensity
+/ 4`, where it holds. **Release:** the depth ramps back to the pattern value and
+the on/off is restored. A pad **never writes the per-pattern store**, so the
+saved value is always the resting position — releasing, leaving the page, or
+even saving the project mid-pad leaves your values intact. The ramp is one cheap
+step per audio block, so it is smooth and click-free and costs almost nothing
+while idle.
+
+> D and E both move the engine's single shared WAVE depth (each also selects its
+> group as the active one); the pitch and pan pads share that depth the same way.
+
 ## CPU footprint
 
 Everything runs on the Digitone's **main CPU (Core A)**; the FM DSP (Core B) is
@@ -207,8 +256,10 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 
 ## Status
 
-Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all six pages)
-and on hardware (a Digitone mk1). Current package version is in
+Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all seven
+pages, and a live-audio check of the PERFORM page: an encoder raises the pattern
+value, a held trig ramps its block and release restores it) and on hardware (a
+Digitone mk1). Current package version is in
 [`CHANGELOG.md`](CHANGELOG.md). No firmware is included or distributed here; the
 `.elemod`s carry only our own code and patch sites (byte-checked against your
 stock file at build time).
@@ -224,5 +275,7 @@ stock file at build time).
   interpolation, ~10 ms grains) — lo-fi.
 - **MIX** is used by FLAN only; WOB and SHFT are wet-only.
 - **CC 20–31** are not yet checked against the stock CC table.
+- **PERFORM trig LEDs:** the momentary pads do not yet light the trig keys (a
+  planned follow-up, after the Digitone LED driver is reverse-engineered).
 - **CPU/DSP load** is the user's to manage; a formal headroom measurement is
   pending.
