@@ -284,6 +284,16 @@ Tracked as they come up; nothing here blocks normal use.
 
 **Bugs / rough edges we want fixed**
 
+- **PAGE still jumps some FX levels:** pressing the **PAGE** key can still push
+  some DIGI parameters to a high value — the stock-event store guard does not
+  cover every path yet.
+- **PITCH fires on a note-off:** a **PHASER** trig can activate the PITCH (WAVE)
+  effect on the **note-off** message instead of on the note.
+- **Microtiming / locked trigs on MIDI tracks:** some trigs on **step 1 of a MIDI
+  track** get locked, and the LEFT / RIGHT microtiming arrows do not nudge them.
+  Suspected: our LEFT/RIGHT (and trig) key handling stays armed while the master
+  view is still "live" — the `master_live` window needs to be closed so those
+  keys always reach the stock grid.
 - **Slider feel:** the page sliders and value bars should track the stock
   parameter widgets more closely.
 - **Encoder acceleration:** the base rate is stock (one step per detent); the

@@ -51,5 +51,14 @@ leave headroom for the synth:
   `51 -> 70 -> 51`. Store v8 and the MIDI-CC regressions pass.
 - Hardware: **stress-tested on two Digitone mk1 units — in parallel and in
   series — over synths, drums, vocals and master tracks (including vinyl)**, on
-  the 3.2 line. See the README's "Known bugs / future fixes" for tracked
-  follow-ups.
+  the 3.2 line.
+
+## Known issues
+
+- **PAGE can jump some FX levels** (the stock-event store guard does not cover
+  every path).
+- **PITCH can fire on a note-off** from a PHASER trig.
+- **Microtiming on MIDI tracks:** some step-1 trigs get locked and the
+  LEFT/RIGHT microtiming arrows do not nudge them.
+
+The full, current list is in the README's "Known bugs / future fixes".
