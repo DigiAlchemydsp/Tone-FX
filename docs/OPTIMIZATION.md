@@ -5,7 +5,7 @@ optimization methods used (and why), what is repurposed from the stock OS and
 from RingTone, and the RAM / flash / headroom ledger. This is the technical
 companion to `HANDOFF.md`; `DSP.md` is the address/architecture reference.
 
-Current package: `tonefx 3.1i` (`.run 20904`, `.bss 25270`).
+Current package: `tonefx 3.2b` (`.run 22722`, `.bss 25390`).
 
 ## 1. Where the code runs
 
@@ -41,7 +41,7 @@ handler that uses it must leave `MACSR` as found.
 | `digicrush` | `crush.c` | 106 | BITS mask / SR hold / CRUNCH clip — one stateless stage |
 | `digifold` | `fold.c` | 100 | triangle wavefolder + hard-clip overdrive |
 | `digiwave` | `wave.c` | 275 | WOB/SHFT/FLAN/PAN/WIDE, one 16 KB delay line + one LFO |
-| `digictl` | `digictl.c` + `cc_glue.s` | 615 + 28 | the 6 master pages (RING/FOLD/TILT/CRUSH/PITCH/STEREO), encoders, keys, per-pattern store, MIDI CC |
+| `digictl` | `digictl.c` + `cc_glue.s` | ~730 + 28 | the 6 master pages (RING/FOLD/TILT/CRUSH/PITCH/STEREO) + the PERFORM page, encoders, keys, per-pattern store, MIDI CC, momentary trig pads |
 | `tonesplash` | `render.c` + `splash.s` | 212 + 18 | boot wordmark (intro only) |
 | shared | `src/corea.h`, `src/sin256.h` | 56 + 39 | Core A helpers + sine table |
 
@@ -173,6 +173,14 @@ Ordered roughly by how much they bought.
     crush, fold, wave and meter each loop the 32 frames, so each frame is
     loaded/stored ~6 times. A single fused `tonefx_master()` loop (load L/R
     once, run the stages inline, store once) is the next big win — see §8.
+16. **PERFORM page: static draw + cheap momentary pads.** The page (kind 6,
+    reached with UP) has no animated graphics — the same pixels every frame.
+    Its 16 trigs are momentary pads, one block per engine that ramp the engine's
+    depth in `ev_render_in` (`pf_apply`), one step per block, and restore the
+    pattern value on release. It costs a single flag test when idle, writes no
+    store, and the ramp is a handful of integer ops only while a pad (or its
+    release) is live. Each engine has its own depth: fold/crush are separate and
+    the WAVE engine has independent PITCH / STEREO depths.
 
 ## 5. Repurposed / reused
 
@@ -181,13 +189,13 @@ Ordered roughly by how much they bought.
 - **The RingTone code base** — `meter.c`, `eq.c`, `ring.c`, `fold.c`,
   `digictl.c` are the original suite modules, extended here.
 - **The master view's page vector.** The stock master view keeps its page kinds
-  in a vector at `view+124`; `digictl` **appends** kinds 0–5 (RING, FOLD, TILT,
-  CRUSH, PITCH, STEREO) after the stock pages and patches only the view's draw
-  slot (`0x40199BBC`). No stock page is taken.
+  in a vector at `view+124`; `digictl` **appends** kinds 0–6 (RING, FOLD, TILT,
+  CRUSH, PITCH, STEREO, PERFORM) after the stock pages and patches only the
+  view's draw slot (`0x40199BBC`). No stock page is taken.
 - **The unused MIDI-track 64-byte block.** Each pattern's four MIDI tracks
   leave `track+0x100` zero in all 128 slots and the OS never writes it;
   `digictl` uses `pattern+0x1040` for the **"DGX1"** per-pattern store
-  (`v7`, 24 int16, 56 of 64 bytes).
+  (`v8`, 25 int16, 58 of 64 bytes).
 - **The parked LFO bridge** (`digimod_dest`/`digimod_voice`, per-voice FLTR
   FREQ read at `0x80003544`) is kept in the store but has no page yet.
 - **The stock CC router** (`0x400ED94E`) is hooked once (`cc_glue.s`, `op:"jmp"`)
@@ -199,17 +207,17 @@ Ordered roughly by how much they bought.
 - **`build.py` size reporting / the linker** reports `imports nothing`, which is
   what keeps the no-libc build honest.
 
-## 6. Footprint / headroom ledger (3.1h)
+## 6. Footprint / headroom ledger (3.2b)
 
 | item | value |
 |---|---|
-| `.run` (code + rodata) | 20,528 B |
-| `.bss` (RAM state) | 25,262 B |
+| `.run` (code + rodata) | 22,722 B |
+| `.bss` (RAM state) | 25,390 B |
 | — of which `digiwave` delay line | 2048 × 2 × 4 = 16,384 B (+8 guard) |
 | — of which tables (`sin256`, `wv_ratio`, `wv_win`) | ~1,024 + 512 + 512 B (`.run`) |
 | **RAM spare** | **~86 KB of 128 KB** |
-| flash spare (3.1h patch) | ≈1.69 MB |
-| sites / relocations | 11 / 545; imports nothing |
+| flash spare (3.2b patch) | ≈1.69 MB |
+| sites / relocations | 11 / 646; imports nothing |
 
 Budgets: `.run`+`.bss` share 128 KB across every linked mod; the delay line is
 the single largest allocation. If it ever needs to grow, the `bulk` region
@@ -219,8 +227,13 @@ runs on core-dn1 2.0a.
 ## 7. Verified vs pending
 
 Verified: compiles clean, links/patch byte-verified (sections 2/4/5/6/7/8),
-digiemu boot/settle (`dsp_running=2`), all six pages present
-(`kinds=[16,15,17,0,1,2,3,4,5]`), hardware boot + first manual pass working.
+digiemu boot/settle (`dsp_running=2`), all six FX pages present
+(`kinds=[16,15,17,0,1,2,3,4,5]`) and the PERFORM page (kind 6,
+`kinds=[16,15,17,0,1,2,3,4,5,6]`), hardware boot + first manual pass working.
+The PERFORM page is verified live (real SSI renders): UP enters it, an encoder
+raises the pattern value, and each engine's pads move only their own depth and
+restore on release (ring 51→70→51; fold 0→63; crush 0→63; WAVE pitch 64→79;
+WAVE stereo 64→111, with the other depth unchanged). Store v8 round-trips.
 
 Pending:
 - **CPU headroom** — render-vector worst/p99 cycles and deadline margin

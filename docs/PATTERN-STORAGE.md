@@ -40,21 +40,23 @@ at `t=4..7`). Every track has a 64-byte area at `track_t + 0x100`:
 
 ## The layout
 
-`digictl` keeps **24 parameters** there (8 + 2*24 = 56 of the 64 bytes):
+`digictl` keeps **25 parameters** there (8 + 2*25 = 58 of the 64 bytes):
 
 ```
 +0..3   "DGX1" magic
-+4..5   version (7)
-+6..7   count (24)
-+8..    24 x int16, big-endian, in DN_STORE order
++4..5   version (8)
++6..7   count (25)
++8..    25 x int16, big-endian, in DN_STORE order
 ```
 
-The 24 params are ring (on, depth, rate), EQ (on, lo, hi), fold (on, amount,
+The 25 params are ring (on, depth, rate), EQ (on, lo, hi), fold (on, amount,
 mode), meter (on), the parked LFO bridge (dest, voice), **crush** (on, mode,
-amount, tune) and **wave** (on, pmode, smode, page, speed, depth, mix, fb).
-Older versions: 3 dropped the per-voice-filter params, 6 added CRUSH/WAVE,
-7 added the split WAVE page/mode params. An older block fails the magic check
-and is treated as a fresh pattern, so it starts from the live values.
+amount, tune) and **wave** (on, pmode, smode, page, speed, pitch depth, stereo
+depth, mix, fb). Older versions: 3 dropped the per-voice-filter params, 6 added
+CRUSH/WAVE, 7 added the split WAVE page/mode params, 8 split the WAVE depth into
+an independent **pitch** depth and **stereo** depth. An older block fails the
+magic check and is treated as a fresh pattern, so it starts from the live
+values.
 
 ## The sync and the adopt guard
 
@@ -75,6 +77,15 @@ Because the block is part of the saved pattern struct, the values follow a
 pattern switch / reload and travel with a project save, exactly like stock
 parameters. New patterns (no magic) start from whatever the mods currently hold,
 so the sound never jumps.
+
+## The PERFORM page momentary pads
+
+The PERFORM page's 16 trig pads (`pf_apply` in `digictl.c`) override a block's
+depth only while the pad is held (and the short release ramp), restoring the
+saved value afterwards. They **never set `dn_store_dirty`** and never write the
+block, so a pad is a live gesture: the pattern value is always the resting
+position, and a save taken during a pad still stores the pattern value. The pad
+state lives in plain `.bss` (`pf_*`), not in the store.
 
 ## Verified in digiemu
 

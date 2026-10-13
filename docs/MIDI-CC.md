@@ -53,7 +53,7 @@ lives at `0x4018D104`, 182 entries; the ones we use are listed below). The risky
 | `24`  | WAVE on/off | >=64 = ON |
 | `25`  | PITCH mode | 0..127 (WOB / SHFT) — also activates the PITCH page |
 | `26`  | WAVE speed | 0..127 (LFO rate) |
-| `27`  | WAVE depth | 0..127 (depth / semitones / width) |
+| `27`  | WAVE depth | 0..127 (the active group's depth: PITCH or STEREO) |
 | `28`  | WAVE mix | 0..127 (flanger dry/wet) |
 | `29`  | WAVE fb | 0..127 (flanger feedback; scaled to 0..0.75 max) |
 | `30`  | STEREO mode | 0..127 (FLAN / PAN / WIDE) — also activates STEREO |
