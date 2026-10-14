@@ -15,19 +15,25 @@ TONE+FX boot splash.
 **Four OS versions across two hosts.** On the **Digitone mk1 / Digitone Keys**
 the suite builds for **OS 1.43 and OS 1.44** from one source: take
 `tonefx-3.5r.elemod` for 1.43 or `tonefx-3.5r-os1.44.elemod` for 1.44 (both in
-[`elemods/`](elemods/)). On the **Digitakt mk1** a community port of Tone+FX
-(3.2a) is kept in the [digi1_mods](https://github.com/gdeo607/digi1_mods)
-project for **OS 1.53 and 1.54** (`tonefx-3.2a3.elemod` /
-`tonefx-3.2a3-os1.54.elemod`) — see
+[`elemods/`](elemods/)). On the **Digitakt mk1** the same suite is ported to
+**OS 1.53 and 1.54** by **gdeo607** in the
+[digi1_mods](https://github.com/gdeo607/digi1_mods) project
+(`tonefx-3.5r.elemod` / `tonefx-3.5r-os1.54.elemod`, eleven pages incl. the
+macros); see
 [its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md)
 for that build's pages and controls.
+
+**Special thanks to [gdeo607](https://github.com/gdeo607), who did most of the
+work on the Digitakt port** — the DT1 render path, page model, keys, pattern
+store and its cross-platform release tooling are his.
 
 This repository is **release-only**: it ships the built `.elemod` packages and
 the docs to install them. It contains **no source and no firmware**. The source
 lives in the development repo, so this repo stays a safe place to cut releases
 from while the older `RingTone` repo is still around. The **Digitakt mk1** port
 (OS 1.53 / 1.54) is not built here — it is kept in the
-[digi1_mods](https://github.com/gdeo607/digi1_mods) project.
+[digi1_mods](https://github.com/gdeo607/digi1_mods) project by **gdeo607**
+(and a copy of its source is under [`DIGITAKT PORT/`](DIGITAKT%20PORT/)).
 
 > Unofficial and unsupported. Not affiliated with, endorsed by or supported by
 > Elektron. Flashing modified firmware is at your own risk.

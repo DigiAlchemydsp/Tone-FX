@@ -2,3 +2,10 @@
 *.syx
 *.bin
 testout/
+
+# The Digitakt port lives under DIGITAKT PORT/digi1_mods-main/ and commits its
+# own assembled hook binaries (bin/*.bin); re-include them over the *.bin rule.
+!DIGITAKT PORT/digi1_mods-main/bin/*.bin
+
+# The port ships as that folder; the zip it was unpacked from is redundant.
+DIGITAKT PORT/digi1_mods-main.zip
