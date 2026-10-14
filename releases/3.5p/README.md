@@ -257,6 +257,14 @@ Turn off the pages you are not using; each true-bypasses. Full ledger in
 full scale (transparent below ~-2.5 dBFS, asymptotic max ~-0.7 dBFS), so a hot
 flanger-feedback / pitch-shift / drive setting cannot hard-clip.
 
+**3.5p performance pass** (measured; nothing audible changes): page graphics draw
+straight to the framebuffer instead of one firmware call per pixel (36 call sites
+→ 0); the output meter only scans while its page is up; block-constant branches in
+CRUSH/FOLD are hoisted; the per-pattern store only fully compares every few UI
+ticks; and the WAVE delay line is shorter. Net: the suite's RAM state dropped to
+**19,446 bytes** (−6.1 KB) and it still `imports nothing`. Full ledger in the
+source repo's `docs/OPTIMIZATION.md`.
+
 ### Load — yours to manage
 
 The Digitone's **CPU and DSP are shared** between the internal FM voices and
