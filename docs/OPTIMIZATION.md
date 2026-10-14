@@ -1,11 +1,15 @@
-# Tone+FX — DSP, CPU and footprint notes (Digitone mk1, OS 1.43)
+# Tone+FX — DSP, CPU and footprint notes (Digitone mk1, OS 1.43/1.44)
 
 What the suite's code does, how it is built, the fixed-point conventions, the
 optimization methods used (and why), what is repurposed from the stock OS and
 from RingTone, and the RAM / flash / headroom ledger. This is the technical
 companion to `HANDOFF.md`; `DSP.md` is the address/architecture reference.
 
-Current package: `tonefx 3.2b` (`.run 22722`, `.bss 25390`).
+Current package: **`tonefx 3.5r`** — Digitone builds `.run 28889`, `.bss 19454`,
+11 sites, `imports nothing`; Digitakt builds `.run 25795`, `.bss 11100`, 4 sites.
+The full current optimization ledger (§9–§12: perf-opt pass, core-dn1 4.0
+migration, UI/dataflow) is in the source repo's `docs/OPTIMIZATION.md`; the
+sections below are the earlier 3.2b-era ledger kept for reference.
 
 ## 1. Where the code runs
 
