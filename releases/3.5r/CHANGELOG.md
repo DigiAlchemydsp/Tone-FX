@@ -2,8 +2,11 @@
 
 ## 3.5r — OS 1.44 support, two page trees, UI pass
 
-Packages: `core-dn1-4.0`, `tonefx-3.5r` (OS 1.43) and
-`tonefx-3.5r-os1.44` (OS 1.44).
+Packages: `core-dn1-4.0`, `tonefx-3.5r` (Digitone 1.43) and
+`tonefx-3.5r-os1.44` (Digitone 1.44). The community **Digitakt mk1** port
+(`core-4.0`, `tonefx-3.5r` / `tonefx-3.5r-os1.54`, OS 1.53 / 1.54) ships in the
+[`gdeo607/digi1_mods`](https://github.com/gdeo607/digi1_mods) project; a copy of
+its source is under [`DIGITAKT PORT/`](DIGITAKT%20PORT/).
 
 - **OS 1.44 support.** One source now builds both OS versions: the firmware
   addresses are `#ifndef *_ADDR` defaults (1.43) that the `ports.1.44` entry
@@ -35,13 +38,26 @@ Packages: `core-dn1-4.0`, `tonefx-3.5r` (OS 1.43) and
   the same slot where an off page draws **OFF**.
 - **Per-pattern store:** `"DGX1"` **v10** (28 params) + `"DGX2"` **v2** (the
   macros). Both follow a pattern switch and a project save.
+- **Cross-platform release (four OS files, two source trees).** The same 3.5r
+  effect code ships from the Digitone source (`digitone_corea`, this release)
+  and the community Digitakt mk1 port by **gdeo607** (`digi1_mods`, source
+  mirrored under `DIGITAKT PORT/`); only the render path, page model, keys, CC
+  map and store differ per device. All four builds — Digitone 1.43 / 1.44 and
+  Digitakt 1.53 / 1.54 — link as `core 4.0 > tonefx 3.5r` and patch
+  byte-for-byte against their own stock file. See the port's
+  [`mods/tonefx/README.md`](DIGITAKT%20PORT/digi1_mods-main/mods/tonefx/README.md)
+  for the full cross-platform release checklist.
 - **Tried and reverted (no shipped change):** fusing the master passes into one
   `CORE_AUDIO_INSERT` callback was bit-correct but raised CPU/DSP load ~15 % on
   hardware, so it was dropped (write-up in the source repo's
   `docs/OPTIMIZATION.md` §12.3).
-- `digictl` 3.5r. Verified: 1.43 build unchanged in shape (subscription-only,
-  format 2, imports nothing); the 1.43 main OS is byte-identical to 3.5p; all
-  eleven pages and both page trees checked; the per-pattern store round-trips.
+- `digictl` 3.5r. Verified: all four builds are format-2, subscription-only and
+  `imports nothing` — Digitone 1.43 / 1.44 both `.run 28889`, `.bss 19454`,
+  11 sites; Digitakt 1.53 / 1.54 both `.run 25795`, `.bss 11100`, 4 sites — and
+  each patches byte-for-byte against its stock file (the 1.43 main OS is
+  byte-identical to 3.5p), linking `core 4.0 > tonefx 3.5r`. The emulator suite
+  keeps the port's documented 3.5r gap (its unicorn test still names the
+  pre-3.2b `digiwave_depth`).
 
 ## 3.5p — macro pages, performance pass, flanger & microtiming fixes
 

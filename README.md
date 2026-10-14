@@ -21,7 +21,9 @@ the suite builds for **OS 1.43 and OS 1.44** from one source: take
 (`tonefx-3.5r.elemod` / `tonefx-3.5r-os1.54.elemod`, eleven pages incl. the
 macros); see
 [its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md)
-for that build's pages and controls.
+for that build's pages and controls. All four build from two shared source trees;
+each links as `core 4.0 > tonefx 3.5r` and patches byte-for-byte against its own
+stock file.
 
 **Special thanks to [gdeo607](https://github.com/gdeo607), who did most of the
 work on the Digitakt port** — the DT1 render path, page model, keys, pattern
