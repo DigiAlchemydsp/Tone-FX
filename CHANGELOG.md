@@ -1,5 +1,48 @@
 # Changelog
 
+## 3.5r — OS 1.44 support, two page trees, UI pass
+
+Packages: `core-dn1-4.0`, `tonefx-3.5r` (OS 1.43) and
+`tonefx-3.5r-os1.44` (OS 1.44).
+
+- **OS 1.44 support.** One source now builds both OS versions: the firmware
+  addresses are `#ifndef *_ADDR` defaults (1.43) that the `ports.1.44` entry
+  overrides through `cflags`/`defsym`, and it carries the eleven 1.44 sites.
+  Both builds lint/patch clean with every site byte-checked against its stock
+  image; **1.44 is hardware-verified**.
+- **Moved to elekloader 0.5.0 + core-dn1 4.0.** The suite links as
+  `core 4.0 > tonefx 3.5r` and the mods' RAM base is now `0x43EC0000` (1.25 MB,
+  was 128 KB). Build `.run 28889`, `.bss 19454`, `imports nothing`.
+- **Two page trees.** The **main scroll** (**LEFT / RIGHT**, unlimited) is the
+  stock master pages then our FX pages in play order **FOLD · CRUSH · RING ·
+  STEREO · PITCH · TILT**. **UP** (or **DOWN**) opens the **macro tree**:
+  **PERFORM · WASH · RADIO · DESTROY · SPACE** (LEFT/RIGHT cycle within it; UP
+  returns to the FX page you left). **PERFORM is no longer in the main scroll.**
+- **FUNC + an encoder turn snaps that parameter to 0 % / 100 %.**
+- **UI pass:** the vertical sliders are full height again; a one-line caption at
+  the bottom row shows the **live value** while that encoder is moved (for 20
+  frames), with the value centred on its **middle digit**; the mode name is
+  centred over the page title, and the sliders + labelled readouts sit in the
+  rightmost third. The output meter moved to **x 108/113** (clear of the `>`
+  arrow and the CRUSH TUN slider frame) and is drawn on the **CRUSH** and
+  **FOLD** pages.
+- **CRUSH:** the sample-rate-hold mode **SR** is renamed **REDUX**.
+- **PITCH** gains a **G mix** (dry/wet) control — three sliders (SPD, DEP,
+  MIX); **WOB / SHFT** now have a dry/wet blend.
+- **STEREO:** **FLAN** shows **four** sliders (SPD, DEP, MIX, FB); **PAN /
+  WIDE** show two.
+- **Macro cue:** a page driven by a macro page draws a framed **MACRO** box in
+  the same slot where an off page draws **OFF**.
+- **Per-pattern store:** `"DGX1"` **v10** (28 params) + `"DGX2"` **v2** (the
+  macros). Both follow a pattern switch and a project save.
+- **Tried and reverted (no shipped change):** fusing the master passes into one
+  `CORE_AUDIO_INSERT` callback was bit-correct but raised CPU/DSP load ~15 % on
+  hardware, so it was dropped (write-up in the source repo's
+  `docs/OPTIMIZATION.md` §12.3).
+- `digictl` 3.5r. Verified: 1.43 build unchanged in shape (subscription-only,
+  format 2, imports nothing); the 1.43 main OS is byte-identical to 3.5p; all
+  eleven pages and both page trees checked; the per-pattern store round-trips.
+
 ## 3.5p — macro pages, performance pass, flanger & microtiming fixes
 
 Packages: `core-dn1-2.0a`, `tonefx-3.5p`.
