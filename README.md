@@ -50,7 +50,7 @@ per-page graphic. Page layout: the mode name is centred over the title, and the
 depth/rate sliders with their labelled readouts sit in the rightmost third;
 **FUNC + an encoder turn snaps that parameter to 0 % / 100 %**.
 
-**Main scroll** — the stock master pages, then the six FX pages in play order:
+Main scroll:
 
 | FOLD | CRUSH | RING |
 |---|---|---|
@@ -60,8 +60,7 @@ depth/rate sliders with their labelled readouts sit in the rightmost third;
 |---|---|---|
 | ![DIGI STEREO page](Screenshots/STEREO.png) | ![DIGI PITCH page](Screenshots/PITCH.png) | ![DIGI TILT page](Screenshots/TILT.png) |
 
-**Macro tree** (**UP** / **DOWN**) — the static PERFORM page and the four
-one-slider macros:
+Macro tree (the static PERFORM page and the four one-slider macros):
 
 | PERFORM | WASH | RADIO | DESTROY | SPACE |
 |---|---|---|---|---|
