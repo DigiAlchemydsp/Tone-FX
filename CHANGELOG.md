@@ -1,5 +1,37 @@
 # Changelog
 
+## 3.5p — macro pages, performance pass, flanger & microtiming fixes
+
+Packages: `core-dn1-2.0a`, `tonefx-3.5p`.
+
+An eleven-page suite now: **RING · FOLD · TILT · CRUSH · PITCH · STEREO ·
+PERFORM · WASH · RADIO · DESTROY · SPACE**.
+
+- **New macro pages** — one vertical slider (A on/off, B–H amount) + a per-page
+  graphic: **WASH** (WOB + SRR + EQ tilt), **RADIO** (band cut + TRSH fold +
+  crush), **DESTROY** (fold + bits + ring), **SPACE** (WAVE stereo width).
+- **WAVE on/off split:** `digiwave_on` (PITCH) and `digiwave_son` (STEREO)
+  toggle independently.
+- **Per-pattern store v10 + `"DGX2"`:** block 1 is `"DGX1"` v10 / 28 params;
+  block 2 is `"DGX2"` v1 / 6 params (the macros). Both follow a pattern switch
+  and a project save.
+- **New: OFF box** — an FX/macro page whose section is off draws a framed
+  **OFF** message box.
+- **Fix — flanger/pitch link:** FLAN gained its **own** delay line, so its
+  feedback can no longer distort the PITCH (WOB/SHFT) block.
+- **Fix — FLAN bypass:** the FLAN mix ramp stored its target instead of the
+  ramped value, so switching FLAN off buzzed every block; it now bypasses
+  cleanly.
+- **Fix — MIDI-track microtiming / volume:** the key/encoder handlers now disarm
+  as soon as the master view closes (they no longer eat LEFT/RIGHT or leak
+  encoder turns in the sequencer).
+- **Performance pass (measured):** direct framebuffer page drawing, the meter
+  scans only while its page is up, block-constant branches hoisted in CRUSH/FOLD,
+  and the per-pattern store compares every few UI ticks. The output ceiling runs
+  on every block.
+- `digictl` 3.5p. Verified: `.run 27475`, `.bss 19446`, imports nothing; eleven
+  pages present; independent WAVE lines; store round-trips.
+
 ## 3.2b — separate WAVE pitch/stereo depths, split fold from crush
 
 Packages: `core-dn1-2.0a`, `tonefx-3.2b`.

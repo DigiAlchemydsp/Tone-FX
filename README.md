@@ -6,9 +6,10 @@ Tone+FX is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 **packaged and released together as one suite**. It adds master ring modulation,
 a low/high-shelf EQ, a Crunch/Redux lo-fi stage, a wavefolder with four fold
 modes (plus an internal overdrive), a modulation insert with five modes (wobble,
-pitch shift, flanger, autopan, stereo width) on two pages, output metering, a
-**seven-page UI** on the master page tree (with a static **PERFORM** page whose
-16 trigs are momentary performance pads) and an animated TONE+FX boot splash.
+pitch shift, flanger, autopan, stereo width) on two pages, output metering, an
+**eleven-page UI** on the master page tree (a static **PERFORM** page whose 16
+trigs are momentary performance pads, plus four one-slider **macro** pages —
+**WASH / RADIO / DESTROY / SPACE**) and an animated TONE+FX boot splash.
 
 This repository is **release-only**: it ships the built `.elemod` packages and
 the docs to install them. It contains **no source and no firmware**. The source
@@ -20,10 +21,11 @@ from while the older `RingTone` repo is still around.
 
 ## Pages
 
-Seven master pages (**FUNC + LFO**; **LEFT / RIGHT** rotates). Each new FX page
+Eleven master pages (**FUNC + LFO**; **LEFT / RIGHT** rotates). Each new FX page
 has a frameless animated graphic in the leftmost third that collapses to a line
 when the effect is at neutral; the **PERFORM** page is static (no animation) and
-is reached with **UP** from any of the other six.
+is reached with **UP** from any of the other pages; the four **macro** pages each
+show one vertical slider plus a per-page graphic.
 
 | RING | FOLD | TILT |
 |---|---|---|
@@ -37,9 +39,15 @@ is reached with **UP** from any of the other six.
 |---|
 | ![PERFORM page](Screenshots/PERFORM.png) |
 
+| WASH | RADIO | DESTROY | SPACE |
+|---|---|---|---|
+| one-slider macro | one-slider macro | one-slider macro | one-slider macro |
+
+Any page whose section is switched off draws a small framed **OFF** box.
+
 ## The suite
 
-**One file is the whole suite:** [`elemods/tonefx-3.2b.elemod`](elemods/) bundles
+**One file is the whole suite:** [`elemods/tonefx-3.5p.elemod`](elemods/) bundles
 every mod below into a single elekloader mod, so it **combines with your other
 mods**. It does **not** include the required core — install `core-dn1-2.0a.elemod`
 too (elekloader provides it), plus anything else you use.
@@ -69,7 +77,7 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
    builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock `.syx`, then **+ Install from file…**
    and pick `core-dn1-2.0a.elemod` (the required core; elekloader ships it) and
-   `tonefx-3.2b.elemod` (the whole suite). Add any of your other mods too.
+   `tonefx-3.5p.elemod` (the whole suite). Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
    press **YES** on the unit and do not power off until it finishes.
@@ -78,12 +86,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.2b
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.5p
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.2b
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.5p
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -93,9 +101,9 @@ with Transfer's legacy OS upgrade mode.
 ## Use
 
 The pages live on the **master page tree**: **FUNC + LFO** cycles the master
-pages. Tone+FX appends seven of its own after the stock ones. **LEFT / RIGHT**
+pages. Tone+FX appends eleven of its own after the stock ones. **LEFT / RIGHT**
 (or the on-screen `<` `>` arrows) rotate the whole master page list, and **UP**
-jumps to the **PERFORM** page from any of the other six (UP again returns). The
+jumps to the **PERFORM** page from any of the other pages (UP again returns). The
 stock **top status bar** (pattern name, tempo, …) stays visible above every page.
 PAGE keeps its stock meaning; no stock key or encoder is taken.
 
@@ -112,9 +120,11 @@ PAGE keeps its stock meaning; no stock key or encoder is taken.
 Every parameter is **0–127** and moves **one step per notch** — the stock
 convention (EQ LOW/HIGH are 0–127 with **64 = flat**).
 
-**Per-pattern settings** (store `"DGX1"` v7): the settings follow a pattern
-switch / reload and travel with a project save, like stock parameters. Each page
-**true-bypasses** when its **A** is off (fades out, then stops using CPU).
+**Per-pattern settings** (store block 1 `"DGX1"` **v10** + block 2 `"DGX2"`
+**v1**): the settings — including the macro pages — follow a pattern switch /
+reload and travel with a project save, like stock parameters. Each page
+**true-bypasses** when its **A** is off (fades out, then stops using CPU). An FX
+or macro page that is off draws a framed **OFF** box.
 
 ### Fold type (FOLD, encoder D)
 
@@ -204,6 +214,20 @@ step per audio block, so it is smooth and click-free and costs almost nothing
 while idle. Because each engine has its own depth, the pads never fight: a pitch
 pad cannot move the stereo depth, and a fold pad cannot move crush.
 
+## Macro pages
+
+Four **one-knob macro** pages bundle several engines behind a single amount
+control. Each shows one vertical slider on the right (**A** = on/off, **B–H** =
+amount) and a per-page animated graphic on the left; the macro drives the
+engines while it is on and restores them when it turns off.
+
+| page | graphic | what it drives |
+|---|---|---|
+| **WASH** | shore band | wobble (WAVE WOB) + SRR (CRUSH SR) + an EQ tilt |
+| **RADIO** | big ring + cone | a band cut (EQ) + TRSH fold drive + CRUSH |
+| **DESTROY** | stair-stepped sine | fold + bit-reduction + ring modulator |
+| **SPACE** | splitting centre line | WAVE stereo width |
+
 ## CPU footprint
 
 Everything runs on the Digitone's **main CPU (Core A)**; the FM DSP (Core B) is
@@ -269,9 +293,10 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 
 ## Status
 
-Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all seven
+Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all eleven
 pages, and a live-audio check of the PERFORM page: an encoder raises the pattern
-value, a held trig ramps its block and release restores it). On hardware it is
+value, a held trig ramps its block and release restores it). On hardware the 3.2
+line is
 **stress-tested on two Digitone mk1 units — in parallel and in series — over
 synths, drums, vocals and master tracks (including vinyl)**, as well as on a
 single unit. Current package version is in [`CHANGELOG.md`](CHANGELOG.md). No
@@ -289,11 +314,9 @@ Tracked as they come up; nothing here blocks normal use.
   cover every path yet.
 - **PITCH fires on a note-off:** a **PHASER** trig can activate the PITCH (WAVE)
   effect on the **note-off** message instead of on the note.
-- **Microtiming / locked trigs on MIDI tracks:** some trigs on **step 1 of a MIDI
-  track** get locked, and the LEFT / RIGHT microtiming arrows do not nudge them.
-  Suspected: our LEFT/RIGHT (and trig) key handling stays armed while the master
-  view is still "live" — the `master_live` window needs to be closed so those
-  keys always reach the stock grid.
+- ~~**Microtiming / locked trigs on MIDI tracks:** LEFT / RIGHT would not nudge a
+  MIDI-track trig and the volume could jump.~~ **Fixed in 3.5p** — the
+  key/encoder handlers now disarm the moment the master view closes.
 - **Slider feel:** the page sliders and value bars should track the stock
   parameter widgets more closely.
 - **Encoder acceleration:** the base rate is stock (one step per detent); the
