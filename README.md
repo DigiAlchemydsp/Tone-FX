@@ -1,6 +1,6 @@
 # Tone+FX
 
-**A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44).**
+**A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44), and — through a community port — the Elektron Digitakt mk1 (OS 1.53 and 1.54).**
 
 Tone+FX is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 **packaged and released together as one suite**. It adds master ring modulation,
@@ -12,14 +12,22 @@ pitch shift, flanger, autopan, stereo width) on two pages, output metering, an
 one-slider **macro** pages — **WASH / RADIO / DESTROY / SPACE**) and an animated
 TONE+FX boot splash.
 
-**One build runs on OS 1.43 and OS 1.44.** The stock file you build from picks
-the release; take `tonefx-3.5r.elemod` for 1.43 or `tonefx-3.5r-os1.44.elemod`
-for 1.44.
+**Four OS versions across two hosts.** On the **Digitone mk1 / Digitone Keys**
+the suite builds for **OS 1.43 and OS 1.44** from one source: take
+`tonefx-3.5r.elemod` for 1.43 or `tonefx-3.5r-os1.44.elemod` for 1.44 (both in
+[`elemods/`](elemods/)). On the **Digitakt mk1** a community port of Tone+FX
+(3.2a) is kept in the [digi1_mods](https://github.com/gdeo607/digi1_mods)
+project for **OS 1.53 and 1.54** (`tonefx-3.2a3.elemod` /
+`tonefx-3.2a3-os1.54.elemod`) — see
+[its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md)
+for that build's pages and controls.
 
 This repository is **release-only**: it ships the built `.elemod` packages and
 the docs to install them. It contains **no source and no firmware**. The source
 lives in the development repo, so this repo stays a safe place to cut releases
-from while the older `RingTone` repo is still around.
+from while the older `RingTone` repo is still around. The **Digitakt mk1** port
+(OS 1.53 / 1.54) is not built here — it is kept in the
+[digi1_mods](https://github.com/gdeo607/digi1_mods) project.
 
 > Unofficial and unsupported. Not affiliated with, endorsed by or supported by
 > Elektron. Flashing modified firmware is at your own risk.
@@ -42,21 +50,26 @@ per-page graphic. Page layout: the mode name is centred over the title, and the
 depth/rate sliders with their labelled readouts sit in the rightmost third;
 **FUNC + an encoder turn snaps that parameter to 0 % / 100 %**.
 
-| RING | FOLD | TILT |
+**Main scroll** — the stock master pages, then the six FX pages in play order:
+
+| FOLD | CRUSH | RING |
 |---|---|---|
-| ![DIGI RING page](Screenshots/RING.png) | ![DIGI FOLD page](Screenshots/FOLD.png) | ![DIGI TILT page](Screenshots/TILT.png) |
+| ![DIGI FOLD page](Screenshots/FOLD.png) | ![DIGI CRUSH page](Screenshots/CRUSH.png) | ![DIGI RING page](Screenshots/RING.png) |
 
-| CRUSH | PITCH | STEREO |
+| STEREO | PITCH | TILT |
 |---|---|---|
-| ![DIGI CRUSH page](Screenshots/CRUSH.png) | ![DIGI PITCH page](Screenshots/PITCH.png) | ![DIGI STEREO page](Screenshots/STEREO.png) |
+| ![DIGI STEREO page](Screenshots/STEREO.png) | ![DIGI PITCH page](Screenshots/PITCH.png) | ![DIGI TILT page](Screenshots/TILT.png) |
 
-| PERFORM |
-|---|
-| ![PERFORM page](Screenshots/PERFORM.png) |
+**Macro tree** (**UP** / **DOWN**) — the static PERFORM page and the four
+one-slider macros:
 
-| WASH | RADIO | DESTROY | SPACE |
-|---|---|---|---|
-| one-slider macro | one-slider macro | one-slider macro | one-slider macro |
+| PERFORM | WASH | RADIO | DESTROY | SPACE |
+|---|---|---|---|---|
+| ![PERFORM page](Screenshots/PERFORM.png) | ![WASH macro page](Screenshots/WASH.png) | ![RADIO macro page](Screenshots/RADIO.png) | ![DESTROY macro page](Screenshots/DESTROY.png) | ![SPACE macro page](Screenshots/SPACE.png) |
+
+Each macro page is one vertical slider (**A** on/off, **B–H** amount) plus a
+per-page graphic: **WASH** (wobble + SRR + EQ tilt), **RADIO** (band cut + TRSH
+fold + crush), **DESTROY** (fold + bits + ring), **SPACE** (WAVE stereo width).
 
 Any page whose section is switched off draws a small framed **OFF** box; a page
 driven by a macro page draws a **MACRO** box in the same slot.
