@@ -17,9 +17,9 @@ the suite builds for **OS 1.43 and OS 1.44** from one source: take
 `tonefx-3.5r.elemod` for 1.43 or `tonefx-3.5r-os1.44.elemod` for 1.44 (both in
 [`elemods/`](elemods/)). On the **Digitakt mk1** the same suite is ported to
 **OS 1.53 and 1.54** by **gdeo607** in the
-[digi1_mods](https://github.com/gdeo607/digi1_mods) project
-(`tonefx-3.5r.elemod` / `tonefx-3.5r-os1.54.elemod`, eleven pages incl. the
-macros); see
+[digi1_mods](https://github.com/gdeo607/digi1_mods) project — shipped here as
+`tonefx-3.5r-dt.elemod` (1.53) and `tonefx-3.5r-dt-os1.54.elemod` (1.54), eleven
+pages incl. the macros; see
 [its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md)
 for that build's pages and controls. All four build from two shared source trees;
 each links as `core 4.0 > tonefx 3.5r` and patches byte-for-byte against its own
@@ -83,11 +83,18 @@ driven by a macro page draws a **MACRO** box in the same slot.
 
 ## The suite
 
-**One file is the whole suite:** [`elemods/tonefx-3.5r.elemod`](elemods/) (OS
-1.43) — and [`elemods/tonefx-3.5r-os1.44.elemod`](elemods/) for OS 1.44 — bundles
-every mod below into a single elekloader mod, so it **combines with your other
-mods**. It does **not** include the required core — install `core-dn1-4.0.elemod`
-too (elekloader provides it), plus anything else you use.
+**One file is the whole suite**, per device and OS:
+
+| file | device | OS | required core |
+|---|---|---|---|
+| [`tonefx-3.5r.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
+| [`tonefx-3.5r-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
+| [`tonefx-3.5r-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
+| [`tonefx-3.5r-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
+
+Each bundles every mod below into a single elekloader mod, so it **combines with
+your other mods**. None includes the required core — install the matching core
+(elekloader provides it) plus anything else you use.
 
 - **digimeter** — output level metering (drawn on the CRUSH and FOLD pages).
 - **digieq** — master low-shelf / high-shelf EQ (LO + HI knobs).
@@ -109,13 +116,17 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
 
 ## Install
 
-1. Get **elekloader** and your own stock `.syx` — `Digitone_and_Digitone_Keys_OS1.43.syx`
-   or your OS 1.44 `.syx` (Elektron's download). elekloader builds a custom OS on
-   your machine; it never distributes firmware.
-2. In elekloader's window, add the stock `.syx`, then **+ Install from file…**
-   and pick `core-dn1-4.0.elemod` (the required core; elekloader ships it) and the
-   suite for your OS — `tonefx-3.5r.elemod` (1.43) or `tonefx-3.5r-os1.44.elemod`
-   (1.44). Add any of your other mods too.
+1. Get **elekloader** and your own stock OS file (Elektron's download) — the
+   Digitone `Digitone_and_Digitone_Keys_OS1.43.syx` (or your OS 1.44 `.syx`), or
+   the Digitakt `Digitakt_OS1.53.syx` (or the OS 1.54 official `.zip`).
+   elekloader builds a custom OS on your machine; it never distributes firmware.
+2. In elekloader's window, add the stock file, then **+ Install from file…** and
+   pick the matching **core** (elekloader ships it) and **suite**:
+   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-3.5r.elemod`
+   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-3.5r-os1.44.elemod`
+   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-3.5r-dt.elemod`
+   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-3.5r-dt-os1.54.elemod`
+   Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
    press **YES** on the unit and do not power off until it finishes.
