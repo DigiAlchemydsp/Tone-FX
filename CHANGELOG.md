@@ -1,5 +1,36 @@
 # Changelog
 
+## 4.0a — DELAYS (WRMZ / GRAINZ) + CPU pass
+
+Packages: `core-dn1-4.0`, `tonefx-4.0a` (Digitone 1.43) and `tonefx-4.0a-os1.44`
+(Digitone 1.44). **Digitone-only** — the community Digitakt mk1 port stays at
+3.5r (last cross-platform release).
+
+- **New DELAYS module (kind 11).** One dedicated, mono delay line serves two
+  modes, appended after the FX chain: **WRMZ** — a modulated delay
+  (TIME / FB / TONE / MOD / RATE / MIX) — and **GRAINZ** — a cloud of three
+  drifting, interpolated taps on the same line (DENS / SIZE / PIT / SPR / FB /
+  MIX). **D** switches the mode; **A** is on/off; **B, C, E, F, G, H** edit the
+  active mode's six parameters. True-bypass when off. Per-pattern store
+  **`"DGX3"` v1** (15 params); **MIDI CC 80–87**. The chain is now
+  **ring → EQ → crush → fold → wave → WRMZ → ceiling → meter**.
+- **CPU / headroom pass.**
+  - The eMAC mode switch is **hoisted to once per block** (`digictl_macsr_begin`
+    / `_end`, `ev_render_out` order 49/74) instead of once per handler. An
+    **eMAC-off** hardware A/B idled lower but ran **worse while processing**, so
+    the eMAC is kept.
+  - **Wave lines are s16** (were 24-bit), interpolated in the line's scale —
+    halves the wave lines' DDR traffic and RAM.
+  - The **wave `wv_flush` mode-change spike is removed** — only FLAN's own
+    feedback line is cleared, so each mode's **worst case now equals its p99**
+    (SHFT worst +9,984 → +5,491 cycles/block).
+  - Animated UI pages redraw at **~5 Hz** (was ~10); a page whose section is off
+    is static.
+  - Built **`-Os`**: `.run 34,398 → 26,018` (−24 %), for i-cache. `.bss
+    85,114 → 47,246`. `imports nothing` on both builds.
+- Two page trees (main scroll + macro tree) are unchanged; the DELAYS page is
+  appended to the master page tree.
+
 ## 3.5r — OS 1.44 support, two page trees, UI pass
 
 Packages: `core-dn1-4.0`, `tonefx-3.5r` (Digitone 1.43) and
@@ -13,7 +44,7 @@ its source is under [`DIGITAKT PORT/`](DIGITAKT%20PORT/).
   overrides through `cflags`/`defsym`, and it carries the eleven 1.44 sites.
   Both builds lint/patch clean with every site byte-checked against its stock
   image; **1.44 is hardware-verified**.
-- **Moved to elekloader 0.5.0 + core-dn1 4.0.** The suite links as
+- **Moved to elekloader 0.5.0 + core-dn1 4.0a.** The suite links as
   `core 4.0 > tonefx 3.5r` and the mods' RAM base is now `0x43EC0000` (1.25 MB,
   was 128 KB). Build `.run 28889`, `.bss 19454`, `imports nothing`.
 - **Two page trees.** The **main scroll** (**LEFT / RIGHT**, unlimited) is the

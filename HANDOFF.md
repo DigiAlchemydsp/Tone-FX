@@ -1,8 +1,10 @@
-# Tone+FX — handoff — 3.5r (four OS files: Digitone 1.43/1.44 + Digitakt 1.53/1.54)
+# Tone+FX — handoff — 4.0a (Digitone 1.43/1.44 + DELAYS; Digitakt stays 3.5r)
 
-Workspace: `C:\Users\benan\Music\ELEKTRON`. **Current release: 3.5r**, shipped as
-four `.elemod`s from two source trees. This file is the release-side handoff; the
-Digitone source has its own (gitignored) `HANDOFF.md` in `digitone_corea/`.
+Workspace: `C:\Users\benan\Music\ELEKTRON`. **Current release: 4.0a**, shipped as
+two Digitone `.elemod`s built from the **`ToneFX-BufferFX-exp`** source tree (the
+suite + the new **DELAYS** module + a CPU/headroom pass). The community Digitakt
+port stays at its last cross-platform release **3.5r**. This file is the
+release-side handoff.
 
 ## 0. The repos
 
@@ -22,22 +24,24 @@ One elemod is the whole suite for one device + OS; none includes a core.
 
 | file (in `elemods/`) | device | OS | required core |
 |---|---|---|---|
-| `tonefx-3.5r.elemod` | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
-| `tonefx-3.5r-os1.44.elemod` | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
-| `tonefx-3.5r-dt.elemod` | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
-| `tonefx-3.5r-dt-os1.54.elemod` | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
+| `tonefx-4.0a.elemod` | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
+| `tonefx-4.0a-os1.44.elemod` | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
 
-`SHA256SUMS` covers all four. The GitHub release **v3.5r** carries the four
-elemods + `Tone+FX-3.5r.zip`; tag `v3.5r` → `7149075`. Old releases are in
-`releases/`; superseded ones in `archive/`.
+`SHA256SUMS` covers both. The GitHub release **v4.0a** carries the two elemods +
+`Tone+FX-4.0a.zip`. The Digitakt mk1 files (`tonefx-3.5r-dt*`) stay on the v3.5r
+release. Old releases are in `releases/`; superseded ones in `archive/`.
 
-## 2. The suite at a glance (3.5r)
+## 2. The suite at a glance (4.0a)
 
-- **Eleven pages, two trees.** Main scroll (LEFT/RIGHT): stock pages then
-  **FOLD · CRUSH · RING · STEREO · PITCH · TILT**. Macro tree (**UP** or
+- **Twelve pages, two trees.** Main scroll (LEFT/RIGHT): stock pages then
+  **FOLD · CRUSH · RING · STEREO · PITCH · TILT · DELAYS**. Macro tree (**UP** or
   **DOWN**): **PERFORM · WASH · RADIO · DESTROY · SPACE**. PERFORM is not in the
   main scroll. **FUNC + encoder turn** snaps 0 %/100 %.
-- **Chain** (`ev_render_out`): ring → EQ → crush → fold → wave → ceiling → meter.
+- **DELAYS** (kind 11) is the new buffer-FX module: one mono delay line, two
+  modes — **WRMZ** (modulated delay) and **GRAINZ** (three granular taps); **D**
+  switches mode; store `"DGX3"` v1; **MIDI CC 80–87**.
+- **Chain** (`ev_render_out`): ring → EQ → crush → fold → wave → WRMZ → ceiling
+  → meter.
 - **UI pass:** full-height sliders; one-line bottom caption (label idle, live
   value for 20 frames on move, centred on the middle digit); meter at x108/113 on
   **CRUSH** and **FOLD**; a macro-driven page draws **MACRO**, a bypassed one
@@ -59,19 +63,19 @@ same code in both trees; the port differs only by `#include "corea.h"` and the
 file header comment. Keep them in step (3-way: ours = the port, base = the
 Digitone 3.2a it forked from, theirs = the new Digitone).
 
-## 4. Verified (this 3.5r cut)
+## 4. Verified (this 4.0a cut)
 
 | build | `.run` | `.bss` | sites | relocs | lint | patch |
 |---|---|---|---|---|---|---|
-| Digitone 1.43 | 28889 | 19454 | 11 | 997 | links | byte-exact |
-| Digitone 1.44 | 28889 | 19454 | 11 | 997 | links | byte-exact |
-| Digitakt 1.53 | 25795 | 11100 | 4 | 974 | links | byte-exact |
-| Digitakt 1.54 | 25795 | 11100 | 4 | 974 | links | byte-exact |
+| Digitone 1.43 | 26018 | 47246 | 11 | 967 | links | byte-exact |
+| Digitone 1.44 | 26018 | 47246 | 11 | 967 | links | byte-exact |
 
-All `imports nothing`, link as `core 4.0 > tonefx 3.5r`. The built elemods are
-**byte-identical to the committed ones** (reproducible). The 1.43 patched main OS
-is byte-identical to 3.5p. Emulator: Digitone `dn1` boots/settles; the port's
-unicorn test still names the pre-3.2b `digiwave_depth` (its documented 3.5r gap).
+Both `imports nothing` and link as `core 4.0 > tonefx 4.0a`, built with
+`-DBX_EMAC_HOISTED -DBX_S16_LINE -Os`. Emulator: Digitone `dn1` boots/settles,
+all twelve pages incl. DELAYS, live diag (WRMZ + GRAINZ, real renders) **0
+faults**, `_probe_mix` 0 clips; the 1.44 build builds and patch-checks clean
+(digiemu cannot settle 1.44). CPU ledger: `ToneFX-BufferFX-exp/docs/OPTIMIZATION-ROUND.md`
+§10–§12.
 
 ## 5. Build / verify commands
 
@@ -81,11 +85,11 @@ $env:PYTHONPATH="C:\Users\benan\Music\ELEKTRON\00 ELEKLOADER NEW\elekloader-main
 $E="C:\Users\benan\Music\ELEKTRON\00 ELEKLOADER NEW"     # core elemods
 ```
 
-Digitone (`workdir digitone_corea`):
+Digitone 4.0a (`workdir "ToneFX-BufferFX-exp"`):
 
 ```powershell
-python -m elekloader.sdk.build mods\tonefx --stock C:\...\Digitone_and_Digitone_Keys_OS1.43.syx
-python -m elekloader.sdk.build mods\tonefx --stock C:\...\dn1-1.44-d4f200d0\Digitone_OS1.44.syx
+python -m elekloader.sdk.build mods\tonefx-buffx --stock C:\...\Digitone_and_Digitone_Keys_OS1.43.syx
+python -m elekloader.sdk.build mods\tonefx-buffx --stock C:\...\Digitone_and_Digitone_Keys_OS1.44.syx
 ```
 
 Digitakt (`workdir "Tone+FX\DIGITAKT PORT\digi1_mods-main"`):
@@ -97,7 +101,7 @@ python -m elekloader.sdk.build mods\tonefx --stock C:\...\Digitakt_OS1.54_dist.z
 
 Verify each pair with `python -m elekloader.lint <mod> --stock <stock> --with
 <core>` and `python -m elekloader.patch --stock <stock> --mod <core> --mod <mod>
---out <tmp.syx> --version 3.5r`. `--version` must be **exactly 4 ASCII chars**.
+--out <tmp.syx> --version 4.0a`. `--version` must be **exactly 4 ASCII chars**.
 
 ## 6. Cutting a release here
 
@@ -112,8 +116,11 @@ Verify each pair with `python -m elekloader.lint <mod> --stock <stock> --with
 ## 7. Open items
 
 - Digitone: **PAGE can still jump some FX levels**; **PITCH can fire on a
-  note-off**; **PERFORM trig LEDs** not lit; **SHFT** quality; headroom not
-  formally measured. See the release README's "Known bugs / future fixes".
+  note-off**; **PERFORM trig LEDs** not lit; **SHFT** quality; **DELAYS GRAINZ
+  PIT parked** (taps read at rate 1.0). See the release README's "Known bugs /
+  future fixes".
+- **Digitakt stays at 3.5r** — the DELAYS module and the 4.0a CPU pass are not
+  ported. Porting them needs the DT1 render-path/site work by gdeo607.
 - Digitakt port: the 3.5r **UI pass** (full-height sliders, live-value caption,
   meter position) is **not** applied to the DT1; its emulator test was not run to
   completion; no DT1 unit test for 3.5r.
@@ -122,7 +129,7 @@ Verify each pair with `python -m elekloader.lint <mod> --stock <stock> --with
 
 ## 8. Version trail
 
-3.5r (OS 1.44 + UI pass + cross-platform release) · 3.5q · 3.5p (perf pass +
+4.0a (DELAYS/WRMZ+GRAINZ + CPU pass, Digitone-only) · 3.5r (OS 1.44 + UI pass + cross-platform release) · 3.5q · 3.5p (perf pass +
 flanger/microtiming fixes) · 3.5a–d (macro pages, split WAVE on/off) · 3.3a/b ·
 3.2a/b (PERFORM page, split WAVE depths) · 3.1a–i · 3.0a/b. Full history:
 [`CHANGELOG.md`](CHANGELOG.md).

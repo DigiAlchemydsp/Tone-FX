@@ -1,29 +1,27 @@
 # Tone+FX
 
-**A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44), and — through a community port — the Elektron Digitakt mk1 (OS 1.53 and 1.54).**
+**A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44), with a new DELAYS module (WRMZ / GRAINZ).**
 
-Tone+FX is a set of [elekloader](https://github.com/irpina/elekloader) mods,
+Tone+FX 4.0a is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 **packaged and released together as one suite**. It adds master ring modulation,
 a low/high-shelf EQ, a Crunch/Redux lo-fi stage, a wavefolder with four fold
 modes (plus an internal overdrive), a modulation insert with five modes (wobble,
-pitch shift, flanger, autopan, stereo width) on two pages, output metering, an
-**eleven-page UI across two master page trees** (the six FX pages, a static
-**PERFORM** page whose 16 trigs are momentary performance pads, plus four
-one-slider **macro** pages — **WASH / RADIO / DESTROY / SPACE**) and an animated
-TONE+FX boot splash.
+pitch shift, flanger, autopan, stereo width) on two pages, **a buffer-FX DELAYS
+module — WRMZ (modulated delay) / GRAINZ (granular cloud)**, output metering, a
+**twelve-page UI across two master page trees** (the six FX pages, the DELAYS
+page, a static **PERFORM** page whose 16 trigs are momentary performance pads,
+plus four one-slider **macro** pages — **WASH / RADIO / DESTROY / SPACE**) and an
+animated TONE+FX boot splash.
 
-**Four OS versions across two hosts.** On the **Digitone mk1 / Digitone Keys**
-the suite builds for **OS 1.43 and OS 1.44** from one source: take
-`tonefx-3.5r.elemod` for 1.43 or `tonefx-3.5r-os1.44.elemod` for 1.44 (both in
-[`elemods/`](elemods/)). On the **Digitakt mk1** the same suite is ported to
-**OS 1.53 and 1.54** by **gdeo607** in the
-[digi1_mods](https://github.com/gdeo607/digi1_mods) project — shipped here as
-`tonefx-3.5r-dt.elemod` (1.53) and `tonefx-3.5r-dt-os1.54.elemod` (1.54), eleven
-pages incl. the macros; see
-[its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md)
-for that build's pages and controls. All four build from two shared source trees;
-each links as `core 4.0 > tonefx 3.5r` and patches byte-for-byte against its own
-stock file.
+**Digitone mk1 / Digitone Keys, OS 1.43 and 1.44.** One source builds both: take
+`tonefx-4.0a.elemod` for 1.43 or `tonefx-4.0a-os1.44.elemod` for 1.44 (both in
+[`elemods/`](elemods/)); each links as `core 4.0 > tonefx 4.0a` and patches
+**byte-for-byte** against its own stock file. The community **Digitakt mk1** port
+(**gdeo607**'s, in the [digi1_mods](https://github.com/gdeo607/digi1_mods)
+project and vendored under [`DIGITAKT PORT/`](DIGITAKT%20PORT/)) stays at its last
+cross-platform release **3.5r** (OS 1.53 / 1.54, eleven pages) — 4.0a's DELAYS
+module and CPU pass are **Digitone-only**; see
+[its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md).
 
 **Special thanks to [gdeo607](https://github.com/gdeo607), who did most of the
 work on the Digitakt port** — the DT1 render path, page model, keys, pattern
@@ -44,11 +42,11 @@ release checklist.
 
 ## Pages
 
-Eleven master pages on **two trees** (**FUNC + LFO** opens the master pages;
+**Twelve** master pages on **two trees** (**FUNC + LFO** opens the master pages;
 **LEFT / RIGHT** rotates, **UP** or **DOWN** switches trees):
 
 - **Main scroll** — the stock master pages, then our FX pages in play order
-  **FOLD · CRUSH · RING · STEREO · PITCH · TILT**.
+  **FOLD · CRUSH · RING · STEREO · PITCH · TILT · DELAYS**.
 - **Macro tree** (**UP**) — **PERFORM · WASH · RADIO · DESTROY · SPACE**
   (LEFT/RIGHT cycle within it; **UP** returns to the FX page you left). **PERFORM
   is not in the main scroll.**
@@ -70,6 +68,12 @@ Main scroll:
 |---|---|---|
 | ![DIGI STEREO page](Screenshots/STEREO.png) | ![DIGI PITCH page](Screenshots/PITCH.png) | ![DIGI TILT page](Screenshots/TILT.png) |
 
+**DELAYS** (WRMZ / GRAINZ — the new buffer-FX page):
+
+| DELAYS |
+|---|
+| ![DELAYS page](Screenshots/DELAYS.png) |
+
 Macro tree (the static PERFORM page and the four one-slider macros):
 
 | PERFORM | WASH | RADIO | DESTROY | SPACE |
@@ -89,10 +93,12 @@ driven by a macro page draws a **MACRO** box in the same slot.
 
 | file | device | OS | required core |
 |---|---|---|---|
-| [`tonefx-3.5r.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
-| [`tonefx-3.5r-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
-| [`tonefx-3.5r-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
-| [`tonefx-3.5r-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
+| [`tonefx-4.0a.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
+| [`tonefx-4.0a-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
+
+(Digitakt mk1, OS 1.53 / 1.54 — `tonefx-3.5r-dt.elemod` /
+`tonefx-3.5r-dt-os1.54.elemod` — remain on the
+[v3.5r release](https://github.com/DigiAlchemydsp/Tone-FX/releases/tag/v3.5r).)
 
 Each bundles every mod below into a single elekloader mod, so it **combines with
 your other mods**. None includes the required core — install the matching core
@@ -108,6 +114,9 @@ your other mods**. None includes the required core — install the matching core
 - **digiwave** — one modulation engine, **two pages**: **PITCH** (WOB pitch
   wobble, SHFT pitch shift, each with a dry/wet MIX) and **STEREO** (FLAN
   flanger, PAN autopan, WIDE stereo width).
+- **digiwrmz** — the **DELAYS** buffer-FX module: one mono delay line with two
+  modes — **WRMZ** (modulated delay) and **GRAINZ** (three drifting granular
+  taps). True-bypass when off.
 - **digictl** — the pages and all the controls; keeps the settings per pattern
   and adds MIDI CC control, plus the **PERFORM** page and its momentary trig
   pads.
@@ -119,15 +128,12 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
 ## Install
 
 1. Get **elekloader** and your own stock OS file (Elektron's download) — the
-   Digitone `Digitone_and_Digitone_Keys_OS1.43.syx` (or your OS 1.44 `.syx`), or
-   the Digitakt `Digitakt_OS1.53.syx` (or the OS 1.54 official `.zip`).
+   Digitone `Digitone_and_Digitone_Keys_OS1.43.syx` (or your OS 1.44 `.syx`).
    elekloader builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock file, then **+ Install from file…** and
    pick the matching **core** (elekloader ships it) and **suite**:
-   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-3.5r.elemod`
-   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-3.5r-os1.44.elemod`
-   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-3.5r-dt.elemod`
-   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-3.5r-dt-os1.54.elemod`
+   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-4.0a.elemod`
+   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-4.0a-os1.44.elemod`
    Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
@@ -137,12 +143,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell (OS 1.43)
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 3.5r
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 4.0a
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 3.5r
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 4.0a
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -170,6 +176,7 @@ stock key or encoder is taken.
 | **CRUSH** | **A** on/off · **D** mode · **E** amount · **F** tune | a waveform (left) that is quantised / held / clipped by the mode + L/R meter |
 | **PITCH** | **A** on/off · **D** mode · **E** speed · **F** depth · **G** mix | two vertical lines that wobble and intertwine |
 | **STEREO** | **A** on/off · **D** mode · **E** speed · **F** depth · **G** mix · **H** feedback | a horizontal line that ripples / splits / spreads (FLAN shows all four sliders; PAN/WIDE show two) |
+| **DELAYS** | **A** on/off · **D** mode (WRMZ/GRAINZ) · **B/C/E/F/G/H** = TIM, FB, TON, MOD, RAT, MIX (WRMZ) or DEN, SIZ, PIT, SPR, FB, MIX (GRAINZ) | a moving line whose wobble follows MIX; a fixed MIX slider + a secondary slider for the parameter you last moved |
 | **PERFORM** | **A** ring depth · **B** fold amount · **C** crush amount · **D** wave pitch depth · **E** wave stereo depth · **F** EQ low · **G** EQ high · **H** wave speed | a static depth readout per FX block; the trigs are momentary pads (see **Performance controls**) |
 
 Every parameter is **0–127** and moves **one step per notch** — the stock
@@ -206,6 +213,20 @@ self-oscillation). **PAN** — autopan. **WIDE** — stereo width (64 = bypass).
 **BITS** — bit-reduce to 24…4 bits, optional TPDF dither (**F** tune). **REDUX**
 — sample-and-hold decimator. **CRUNCH** — Q8 gain into a hard clip.
 
+### DELAYS modes (DELAYS, encoder D)
+
+One mono delay line, two modes (the wet is mono, mixed into both channels — the
+dry stays stereo). **D** switches the mode; **A** is on/off; **B, C, E, F, G, H**
+edit the active mode's six parameters; the page shows a fixed **MIX** slider and
+a secondary slider that appears while you move any of the other five.
+
+- **WRMZ** — a modulated delay: **TIM** (time), **FB** (feedback, capped at
+  0.80), **TON** (damping), **MOD** (depth), **RAT** (0.1–3.0 Hz wow/flutter),
+  **MIX**.
+- **GRAINZ** — a granular **cloud**: three drifting, interpolated taps off the
+  same line — **DEN** (drift), **SIZ** (tap spacing), **PIT** (parked), **SPR**
+  (spread), **FB**, **MIX**.
+
 ### MIDI CC control
 
 All FX parameters respond to **incoming MIDI CC** on numbers the Digitone does
@@ -226,9 +247,13 @@ master FX.
 | `26` | WAVE speed | `27` | WAVE depth |
 | `28` | WAVE mix | `29` | WAVE feedback |
 | `30` | STEREO mode | `31` | WAVE group |
+| `80` | DELAYS on/off | `81` | DELAYS mode (WRMZ/GRAINZ) |
+| `82` | DELAYS 1 (TIM/DEN) | `83` | DELAYS 2 (FB/SIZ) |
+| `84` | DELAYS 3 (TON/PIT) | `85` | DELAYS 4 (MOD/SPR) |
+| `86` | DELAYS 5 (RAT/FB) | `87` | DELAYS 6 (MIX) |
 
-Signal order on the master mix is **ring → EQ → crush → fold → wave → meter**.
-Ring, EQ and fold are on by default.
+Signal order on the master mix is **ring → EQ → crush → fold → wave → WRMZ →
+ceiling → meter**. Ring, EQ and fold are on by default.
 
 ## Performance controls
 
@@ -310,6 +335,16 @@ untouched. Approximate instructions per active stereo frame (32 frames/block,
 Turn off the pages you are not using; each true-bypasses. Full ledger in
 [`docs/OPTIMIZATION.md`](docs/OPTIMIZATION.md).
 
+**4.0a CPU pass** (measured; nothing audible changes): the eMAC mode switch is
+hoisted to **once per block** instead of once per handler; the wave delay lines
+are **s16** (half their DDR traffic and RAM); the wave **mode-change flush spike
+is removed** (each mode's worst case now equals its p99); and animated pages
+redraw at **~5 Hz**. The build is size-optimised (`-Os`): `.run 34,398 → 26,018`
+bytes, and it still `imports nothing`. The new **DELAYS** module adds one mono
+delay line (the package's RAM is 47,246 bytes, mostly that line). On hardware an
+**eMAC-off** A/B idled lower but ran **worse while processing**, so the eMAC is
+kept. Ledger: `docs/OPTIMIZATION-ROUND.md` §10–§12 (source repo).
+
 **Output ceiling:** a final soft limiter keeps the master mix below the 24-bit
 full scale (transparent below ~-2.5 dBFS, asymptotic max ~-0.7 dBFS), so a hot
 flanger-feedback / pitch-shift / drive setting cannot hard-clip.
@@ -358,17 +393,15 @@ sha256sum -c SHA256SUMS        # or: Get-FileHash elemods/* -Algorithm SHA256
 
 ## Status
 
-Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all eleven
-pages, and a live-audio check of the PERFORM page: an encoder raises the pattern
-value, a held trig ramps its block and release restores it). The **OS 1.44**
-port is **hardware-verified** (digiemu cannot settle OS 1.44, so it is not
-emulator-tested) and builds/patch-checks clean alongside the 1.43 build. On
-hardware the 3.2 line is
-**stress-tested on two Digitone mk1 units — in parallel and in series — over
-synths, drums, vocals and master tracks (including vinyl)**, as well as on a
-single unit. Current package version is in [`CHANGELOG.md`](CHANGELOG.md). No
-firmware is included or distributed here; the `.elemod`s carry only our own code
-and patch sites (byte-checked against your stock file at build time).
+Tested in the **digiemu** emulator (boot/settle, `dsp_running=2`, all twelve
+pages incl. **DELAYS**; a live diag of WRMZ + GRAINZ with real SSI renders —
+**0 faults**; `_probe_mix` 0 clips; the PERFORM page's live-audio check). The
+**OS 1.44** port builds and patch-checks clean (digiemu cannot settle 1.44). The
+4.0a CPU pass was A/B'd on hardware — the eMAC was kept (it is slower idle but
+faster while processing) and the wave mode-change spike is gone. Current package
+version is in [`CHANGELOG.md`](CHANGELOG.md). No firmware is included or
+distributed here; the `.elemod`s carry only our own code and patch sites
+(byte-checked against your stock file at build time).
 
 ## Known bugs / future fixes
 
@@ -392,6 +425,8 @@ Tracked as they come up; nothing here blocks normal use.
 - **SHFT quality:** the pitch shifter is deliberately lightweight (linear
   interpolation, ~10 ms grains) and a little warbly — a quality pass, or a
   hi-fi option, is wanted.
+- **DELAYS GRAINZ PIT is parked:** the granular taps read at rate 1.0, so the
+  **PIT** knob does nothing yet (a planned tap-rate / transpose control).
 - ~~**WOB / SHFT have no dry-wet:** MIX is used by FLAN only.~~ **Fixed in
   3.5r** — PITCH gains a **G mix** (dry/wet) so WOB/SHFT dial in like the
   flanger.

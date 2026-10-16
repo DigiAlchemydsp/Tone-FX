@@ -7,14 +7,14 @@
 # One file is the whole suite, but it requires the Digitone core
 # (core-dn1-4.0.elemod), which elekloader provides. The 4th argument is the core
 # path; without it, a core next to this repo is used. The suite is picked from
-# the stock name: tonefx-3.5r-os1.44.elemod for OS 1.44, else tonefx-3.5r.
+# the stock name: tonefx-4.0a-os1.44.elemod for OS 1.44, else tonefx-4.0a.
 #
 # Needs elekloader importable (installed, or PYTHONPATH set to its folder).
 set -e
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 STOCK=${1:?usage: build.sh STOCK.syx [OUT.syx] [VERSION] [CORE.elemod] [SUITE.elemod]}
 OUT=${2:-ToneFX.syx}
-VERSION=${3:-3.5r}
+VERSION=${3:-4.0a}
 CORE=${4:-}
 SUITE=${5:-}
 if [ -z "$CORE" ]; then
@@ -28,8 +28,8 @@ if [ -z "$CORE" ] || [ ! -f "$CORE" ]; then
 fi
 if [ -z "$SUITE" ]; then
     case "$STOCK" in
-        *1.44*) SUITE="$ROOT/elemods/tonefx-3.5r-os1.44.elemod" ;;
-        *)      SUITE="$ROOT/elemods/tonefx-3.5r.elemod" ;;
+        *1.44*) SUITE="$ROOT/elemods/tonefx-4.0a-os1.44.elemod" ;;
+        *)      SUITE="$ROOT/elemods/tonefx-4.0a.elemod" ;;
     esac
 fi
 python -m elekloader.patch --stock "$STOCK" --mod "$CORE" --mod "$SUITE" \
