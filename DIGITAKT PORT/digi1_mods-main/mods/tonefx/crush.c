@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * digicrush: master Crunch / Redux insert (bit-reduce, sample-rate hold, drive).
- * Digital Alchemy DSP's, for the original FM groovebox (and its Keys model), OS 1.43; ported to
- * the DT1 (OS 1.53 / 1.54) through corea.h.
+ * Digitone mk1 / Keys, OS 1.43.
  *
  * Three stateless/near-stateless lo-fi stages on the output half:
  *   BITS    quantise to N bits (a mask), with optional TPDF dither (tune)
@@ -14,6 +13,7 @@
  * it combines with every mod.
  */
 #include "corea.h"
+#include "emac.h"
 
 /* runtime parameters (exported; digictl edits them). 0..127, one step/notch. */
 int digicrush_on = 0;
@@ -44,10 +44,10 @@ void digicrush_render_in(void)
     dc_off = dn_out_off();
 }
 
-/* x*g/2^8, full precision (g is Q8, x any int32) */
+/* x*g/2^8, full precision (g is Q8, x any int32) -- on the eMAC (bx_q8) */
 static inline int dc_q8(int x, unsigned g)
 {
-    return (x >> 8) * (int)g + (int)(((unsigned)(x & 0xff) * g) >> 8);
+    return bx_q8(x, (int)g);
 }
 
 static inline int dc_clip(int v)
@@ -127,10 +127,12 @@ void digicrush_render_out(void)
         dc_hold_r = hr;
     } else {
         unsigned g = dc_gain;
+        bx_emac_enter();                        /* the Q8 drive rides the eMAC */
         for (i = 0; i < DN_OUT_FRAMES; i++) {
             p[0] = dc_clip(dc_q8(p[0], g));
             p[1] = dc_clip(dc_q8(p[1], g));
             p += 2;
         }
+        bx_emac_leave();
     }
 }

@@ -3,8 +3,8 @@
 ## 4.0a — DELAYS (WRMZ / GRAINZ) + CPU pass
 
 Packages: `core-dn1-4.0`, `tonefx-4.0a` (Digitone 1.43) and `tonefx-4.0a-os1.44`
-(Digitone 1.44). **Digitone-only** — the community Digitakt mk1 port stays at
-3.5r (last cross-platform release).
+(Digitone 1.44); `core-4.0`, `tonefx-4.0a-dt` (Digitakt 1.53) and
+`tonefx-4.0a-dt-os1.54` (Digitakt 1.54). **Four OS files, two hosts.**
 
 - **New DELAYS module (kind 11).** One dedicated, mono delay line serves two
   modes, appended after the FX chain: **WRMZ** — a modulated delay
@@ -30,6 +30,14 @@ Packages: `core-dn1-4.0`, `tonefx-4.0a` (Digitone 1.43) and `tonefx-4.0a-os1.44`
     85,114 → 47,246`. `imports nothing` on both builds.
 - Two page trees (main scroll + macro tree) are unchanged; the DELAYS page is
   appended to the master page tree.
+- **Digitakt mk1 port brought to 4.0a** (community port by **gdeo607**, source
+  mirrored under `DIGITAKT PORT/`): the same DELAYS module and CPU pass, twelve
+  pages. DT1-specific: `DC_PER_STEP` **4 → 1** (one step per knob notch on the
+  hardware; 4 was only ever right in the emulator), the master-page cycle now
+  admits **only the stock master-FX kinds (COMP / internal / external mixer)
+  plus ours** (a non-master page sharing the vector no longer rides along), and
+  the per-pattern store is repacked to `"DX"` **v9** (48 params, 1-bit
+  on/off/switch params, 34 bytes) so the DELAYS settings persist.
 
 ## 3.5r — OS 1.44 support, two page trees, UI pass
 

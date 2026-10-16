@@ -26,10 +26,12 @@ One elemod is the whole suite for one device + OS; none includes a core.
 |---|---|---|---|
 | `tonefx-4.0a.elemod` | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
 | `tonefx-4.0a-os1.44.elemod` | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
+| `tonefx-4.0a-dt.elemod` | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
+| `tonefx-4.0a-dt-os1.54.elemod` | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
 
-`SHA256SUMS` covers both. The GitHub release **v4.0a** carries the two elemods +
-`Tone+FX-4.0a.zip`. The Digitakt mk1 files (`tonefx-3.5r-dt*`) stay on the v3.5r
-release. Old releases are in `releases/`; superseded ones in `archive/`.
+`SHA256SUMS` covers all four. The GitHub release **v4.0a** carries the four
+elemods + `Tone+FX-4.0a.zip`. Old releases are in `releases/`; superseded ones in
+`archive/`.
 
 ## 2. The suite at a glance (4.0a)
 
@@ -69,8 +71,10 @@ Digitone 3.2a it forked from, theirs = the new Digitone).
 |---|---|---|---|---|---|---|
 | Digitone 1.43 | 26018 | 47246 | 11 | 967 | links | byte-exact |
 | Digitone 1.44 | 26018 | 47246 | 11 | 967 | links | byte-exact |
+| Digitakt 1.53 | 23184 | 38840 | 4 | 909 | links | byte-exact |
+| Digitakt 1.54 | 23184 | 38840 | 4 | 909 | links | byte-exact |
 
-Both `imports nothing` and link as `core 4.0 > tonefx 4.0a`, built with
+All four `imports nothing` and link as `core 4.0 > tonefx 4.0a`, built with
 `-DBX_EMAC_HOISTED -DBX_S16_LINE -Os`. Emulator: Digitone `dn1` boots/settles,
 all twelve pages incl. DELAYS, live diag (WRMZ + GRAINZ, real renders) **0
 faults**, `_probe_mix` 0 clips; the 1.44 build builds and patch-checks clean

@@ -1,6 +1,6 @@
 # Tone+FX
 
-**A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44), with a new DELAYS module (WRMZ / GRAINZ).**
+**A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44) and the Digitakt mk1 (OS 1.53 and 1.54), with a new DELAYS module (WRMZ / GRAINZ).**
 
 Tone+FX 4.0a is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 **packaged and released together as one suite**. It adds master ring modulation,
@@ -13,14 +13,13 @@ page, a static **PERFORM** page whose 16 trigs are momentary performance pads,
 plus four one-slider **macro** pages — **WASH / RADIO / DESTROY / SPACE**) and an
 animated TONE+FX boot splash.
 
-**Digitone mk1 / Digitone Keys, OS 1.43 and 1.44.** One source builds both: take
-`tonefx-4.0a.elemod` for 1.43 or `tonefx-4.0a-os1.44.elemod` for 1.44 (both in
-[`elemods/`](elemods/)); each links as `core 4.0 > tonefx 4.0a` and patches
-**byte-for-byte** against its own stock file. The community **Digitakt mk1** port
-(**gdeo607**'s, in the [digi1_mods](https://github.com/gdeo607/digi1_mods)
-project and vendored under [`DIGITAKT PORT/`](DIGITAKT%20PORT/)) stays at its last
-cross-platform release **3.5r** (OS 1.53 / 1.54, eleven pages) — 4.0a's DELAYS
-module and CPU pass are **Digitone-only**; see
+**Four OS files, two hosts.** On the **Digitone mk1 / Digitone Keys** take
+`tonefx-4.0a.elemod` (OS 1.43) or `tonefx-4.0a-os1.44.elemod` (OS 1.44). On the
+**Digitakt mk1** — **gdeo607**'s port, source mirrored under
+[`DIGITAKT PORT/`](DIGITAKT%20PORT/) — take `tonefx-4.0a-dt.elemod` (OS 1.53) or
+`tonefx-4.0a-dt-os1.54.elemod` (OS 1.54); both now carry the DELAYS module and the
+CPU pass too. Each links as `core 4.0 > tonefx 4.0a` and patches
+**byte-for-byte** against its own stock file. See
 [its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md).
 
 **Special thanks to [gdeo607](https://github.com/gdeo607), who did most of the
@@ -95,10 +94,8 @@ driven by a macro page draws a **MACRO** box in the same slot.
 |---|---|---|---|
 | [`tonefx-4.0a.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
 | [`tonefx-4.0a-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
-
-(Digitakt mk1, OS 1.53 / 1.54 — `tonefx-3.5r-dt.elemod` /
-`tonefx-3.5r-dt-os1.54.elemod` — remain on the
-[v3.5r release](https://github.com/DigiAlchemydsp/Tone-FX/releases/tag/v3.5r).)
+| [`tonefx-4.0a-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
+| [`tonefx-4.0a-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
 
 Each bundles every mod below into a single elekloader mod, so it **combines with
 your other mods**. None includes the required core — install the matching core
@@ -128,12 +125,15 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
 ## Install
 
 1. Get **elekloader** and your own stock OS file (Elektron's download) — the
-   Digitone `Digitone_and_Digitone_Keys_OS1.43.syx` (or your OS 1.44 `.syx`).
+   Digitone `Digitone_and_Digitone_Keys_OS1.43.syx` (or your OS 1.44 `.syx`), or
+   the Digitakt `Digitakt_OS1.53.syx` (or the OS 1.54 official `.zip`).
    elekloader builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock file, then **+ Install from file…** and
    pick the matching **core** (elekloader ships it) and **suite**:
    - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-4.0a.elemod`
    - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-4.0a-os1.44.elemod`
+   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-4.0a-dt.elemod`
+   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-4.0a-dt-os1.54.elemod`
    Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;

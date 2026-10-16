@@ -1,18 +1,20 @@
 # Tone+FX 4.0a — DELAYS (WRMZ / GRAINZ) + CPU pass
 
-The **eleven-page** Tone+FX suite **plus a new buffer-FX module**: a dedicated
-mono delay line that serves two modes — **WRMZ** (a modulated delay) and
-**GRAINZ** (a cloud of three drifting taps on the same line) — edited on one
-**DELAYS** page. Twelve pages now, Digitone mk1 / Digitone Keys, **OS 1.43 and
-1.44** from one source.
+The **Tone+FX suite** (now **twelve pages**) **plus a new buffer-FX module**: a
+dedicated mono delay line that serves two modes — **WRMZ** (a modulated delay)
+and **GRAINZ** (a cloud of three drifting taps on the same line) — edited on one
+**DELAYS** page. **Four OS files, two hosts:** the Digitone mk1 / Keys (**OS
+1.43, 1.44**) and, through **gdeo607**'s community port, the Digitakt mk1 (**OS
+1.53, 1.54**).
 
 This is the first release built on the **ToneFX-BufferFX** line, so it also
 carries a **CPU/headroom pass** over the whole suite (see *New in 4.0a*).
 
-> **Digitakt mk1:** this release is **Digitone-only**. The Digitakt port's last
-> release is **3.5r** (`tonefx-3.5r-dt.elemod` / `-dt-os1.54.elemod`, OS 1.53 /
-> 1.54), still on the [v3.5r release](https://github.com/DigiAlchemydsp/Tone-FX/releases/tag/v3.5r)
-> — the DELAYS module and this CPU pass are not ported there.
+> **Digitakt mk1** (community port by **gdeo607**) is now on 4.0a too — the same
+> DELAYS module and CPU pass, plus its own fixes: encoder travel, the master-page
+> cycle limited to the master-FX pages, and a repacked per-pattern store. Source
+> mirrored under
+> [`DIGITAKT PORT/`](https://github.com/DigiAlchemydsp/Tone-FX/tree/master/DIGITAKT%20PORT).
 
 ## Install
 
@@ -22,6 +24,8 @@ Each file is the whole suite + DELAYS for one OS; none includes the core.
 |---|---|---|---|
 | `tonefx-4.0a.elemod` | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
 | `tonefx-4.0a-os1.44.elemod` | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
+| `tonefx-4.0a-dt.elemod` | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
+| `tonefx-4.0a-dt-os1.54.elemod` | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
 
 Install the matching core (elekloader provides it), tick the core and `tonefx`,
 set the OS version tag and **BUILD FIRMWARE**; flash the `.syx` with Transfer.
