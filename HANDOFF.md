@@ -1,10 +1,9 @@
-# Tone+FX — handoff — 4.0a (Digitone 1.43/1.44 + DELAYS; Digitakt stays 3.5r)
+# Tone+FX — handoff — 4.0a (four OS files: Digitone 1.43/1.44 + Digitakt 1.53/1.54, DELAYS)
 
-Workspace: `C:\Users\benan\Music\ELEKTRON`. **Current release: 4.0a**, shipped as
-two Digitone `.elemod`s built from the **`ToneFX-BufferFX-exp`** source tree (the
-suite + the new **DELAYS** module + a CPU/headroom pass). The community Digitakt
-port stays at its last cross-platform release **3.5r**. This file is the
-release-side handoff.
+Workspace: `C:\Users\benan\Music\ELEKTRON`. **Current release: 4.0a**, four
+`.elemod`s: two **Digitone** built from `ToneFX-BufferFX-exp` (the suite + the
+**DELAYS** module + a CPU/headroom pass) and two **Digitakt** from the vendored
+port under `DIGITAKT PORT/`. This file is the release-side handoff.
 
 ## 0. The repos
 
@@ -123,17 +122,19 @@ Verify each pair with `python -m elekloader.lint <mod> --stock <stock> --with
   note-off**; **PERFORM trig LEDs** not lit; **SHFT** quality; **DELAYS GRAINZ
   PIT parked** (taps read at rate 1.0). See the release README's "Known bugs /
   future fixes".
-- **Digitakt stays at 3.5r** — the DELAYS module and the 4.0a CPU pass are not
-  ported. Porting them needs the DT1 render-path/site work by gdeo607.
+- **Digitakt mk1** is now at 4.0a too (DELAYS + CPU pass). Its `DC_PER_STEP`
+  (=1), master-page-cycle fix and the `"DX"` v9 store repack are hardware-validated
+  but not covered by the port's emulator test (which still assumes ±4 encoder
+  deltas / 11 pages). A PR syncing these upstream is open:
+  [gdeo607/digi1_mods#6](https://github.com/gdeo607/digi1_mods/pull/6).
 - Digitakt port: the 3.5r **UI pass** (full-height sliders, live-value caption,
-  meter position) is **not** applied to the DT1; its emulator test was not run to
-  completion; no DT1 unit test for 3.5r.
+  meter position) is **not** applied to the DT1.
 - `digihealth-1.1-os1.44.elemod` sits untracked in the repo root (not part of
   Tone+FX).
 
 ## 8. Version trail
 
-4.0a (DELAYS/WRMZ+GRAINZ + CPU pass, Digitone-only) · 3.5r (OS 1.44 + UI pass + cross-platform release) · 3.5q · 3.5p (perf pass +
+4.0a (DELAYS/WRMZ+GRAINZ + CPU pass; four OS files, the DT1 port included) · 3.5r (OS 1.44 + UI pass + cross-platform release) · 3.5q · 3.5p (perf pass +
 flanger/microtiming fixes) · 3.5a–d (macro pages, split WAVE on/off) · 3.3a/b ·
 3.2a/b (PERFORM page, split WAVE depths) · 3.1a–i · 3.0a/b. Full history:
 [`CHANGELOG.md`](CHANGELOG.md).
