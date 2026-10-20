@@ -24,9 +24,8 @@ are left to the stock handler untouched.
 
 The apply sets the same globals the page does and marks the pattern store dirty,
 so a CC move is saved with the pattern (see `docs/PATTERN-STORAGE.md`). Our
-parameters change only from our own page encoders, keys and these CCs — the
-per-pattern sync only adopts a block that still carries the `"DGX1"` magic, so a
-stock OS event cannot reach any DIGI parameter.
+parameters change only from our own page encoders, keys and these CCs — the store
+is a mod-owned RAM table, so a stock OS event cannot reach any DIGI parameter.
 
 ## CC map
 

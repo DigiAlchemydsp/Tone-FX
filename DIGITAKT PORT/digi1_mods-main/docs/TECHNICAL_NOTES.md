@@ -1414,4 +1414,6 @@ unicorn (tests/emu_tonefx.py). Mod: mods/tonefx (its README has the user side).
   d0-d1/a0-a1, and the C code has no EMAC instruction. digiemu: the bus's L/R words >> 8 equal the
   chain's output in every block, with FAST AUDIO running the stage from SRAM.
 - **Per pattern, in RAM.** Each pattern's kit (0x4191e018 + p × 0x91e; 1.54 0x4191f018) has 34 bytes at
-  +0x530 that are zero and never saved. Tone+FX's 24 params live there, one byte each.
+  +0x530 that are zero and never saved. Tone+FX used to pack its params there (one byte each) but moved
+  to a mod-owned RAM table (`dn_tab`) — the kit spare is contested by other mods and by the kit object
+  itself.

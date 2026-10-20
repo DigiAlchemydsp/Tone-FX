@@ -109,20 +109,21 @@ The other controls:
 
   - None of these numbers is in the DT1's CC tables. They were read from
     the running firmware (tests/digiemu_tonefx.py).
-- **Per-pattern settings.** The settings follow the pattern, as on the original.
+- **Per-pattern settings.** The settings follow the pattern within a session.
   - 4.0a has **48 params** (the six FX, the meter, the four macros, the WAVE
-    dry/wet, and the DELAYS module). The kit's RAM-only spare is 34 bytes (kit +
-    0x530 .. 0x551): the on/off/switch params take **1 bit** each and the 0..127
-    values 7 bits, packed after a 3-byte header (`"DX"`, **version 9**) =
-    **34 bytes**. Everything, the macros and DELAYS included, stays per-pattern.
-  - Those bytes are **not written to the +Drive**. The settings are kept while
-    the unit is on, but **not over a power cycle or a project load**, where a
-    pattern starts from the live values.
-  - The original keeps them in a saved part of its pattern. The DT1's
-    saved spare bytes per pattern (48) are taken by Digi Matrix, Digi Poly and
-    Digi EQ.
-- **RAM.** All mods share 128 KB. Tone+FX 4.0a takes ~59 KB in all (`.run`
-  22.6 KB, `.bss` 37.9 KB — the delay line is the bulk, and it is s16/halved).
+    dry/wet, and the DELAYS module). They live in a **mod-owned RAM table**
+    (`dn_tab[128][48]` in `.bss`, one row per pattern, keyed by `*0x4199dc44`).
+    No stock memory is read or written.
+  - The table is **not written to the +Drive**. The settings are kept while the
+    unit is on, but **not over a power cycle or a project load**, where a pattern
+    starts from the live values (as before).
+  - Earlier builds packed the params into the kit's RAM-only spare
+    (`kit + 0x530`, `"DX"` v9). The DT1's saved spare bytes per pattern are taken
+    by Digi Matrix, Digi Poly and Digi EQ, and the kit spare is contested too, so
+    the packings corrupted one another; the dedicated table removes that.
+- **RAM.** Core 4.0 gives the mods 256 KB (`.run` + `.bss`). Tone+FX 4.0a takes
+  ~73 KB in all (`.run` 22.9 KB, `.bss` 50.0 KB — the per-pattern table is
+  ~12 KB, the delay line the rest, and it is s16/halved).
 - **Track-LFO bridge.** It is parked on the original (nothing sets it), and is
   off here.
 

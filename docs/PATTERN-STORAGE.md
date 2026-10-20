@@ -1,107 +1,65 @@
-# Per-pattern storage for the DIGI FX params (Digitone mk1, OS 1.43)
+# Per-pattern storage for the DIGI FX params (digictl 2.9)
 
-Status: **implemented (digictl 2.0, shipped in the merged `tonefx` mod),
-verified in digiemu.** The FX parameters save and reload with the pattern, like
-stock parameters, instead of living only in the mod's `.bss`.
+Status: **Digitone: one reserved MIDI track (channel 16), packed. Digitakt: a
+mod-owned RAM table.** MIDI tracks 1-3 (channels 1-15) and the synth tracks are
+never touched.
 
-## The problem
+## Why not the old blocks (channels 1-3)
 
-The DIGI FX parameters (`digiring_*`, `digieq_*`, `digifold_*`, `digimeter_on`,
-`digimod_*`, `digicrush_*`, `digiwave_*`) are C globals in the mods' `.bss` (RAM
-`0x47BE0000-0x47C00000`). That region is cleared at boot, so the settings would
-be lost at power-off and would not change with the pattern.
+Earlier builds spread the params over the pattern struct's MIDI-track blocks at
+`pattern + 0x1040 / +0x1410 / +0x17E0` — `track_t + 0x100` of MIDI tracks 1-3.
+They measured zero on *unconfigured* tracks, but a **configured** MIDI track
+writes its channel/page there, so the stock data and our values corrupted each
+other (jumping FX values, moved MIDI channels).
 
-## The pattern store (measured)
+## Digitone: one reserved MIDI track (channel 16)
 
-The project's patterns are an array of `0x1611D`-byte storage structs:
-
-```
-pattern(slot) = 0x407FC414 + slot * 0x1611D        (slot 0..127)
-current pattern pointer: *(0x4138E214)
-```
-
-Confirmed from the pattern dispatcher `0x40094EF4` (it stores its argument at
-`0x4138E214`) and the manager code at `0x400FE03A`, which computes
-`0x407FC414 + index*0x1611D`. `*0x4138E214` moved by exactly `0x1611D` on a
-pattern switch (measured in digiemu). The struct is `patternStorage_v11_t`
-(RTTI); the render's algorithm getter `0x4009444A` reads its last long at
-`+0x16119`. The OS copies the struct wholesale (several
-`movel #90397,%sp@-` memcpy/memset sites, e.g. `0x400157F0`).
-
-## The reserved block
-
-Each `track_t` record is `0x3D0` bytes (8 tracks: 4 synth at `t=0..3`, 4 MIDI
-at `t=4..7`). Every track has a 64-byte area at `track_t + 0x100`:
-
-- **synth tracks** use it (voice/sound data — nonzero);
-- **MIDI tracks** were measured **zero in all 128 slots**, and the OS's
-  parameter mirror never wrote it, so `pattern + 0x1040` (MIDI track 0's block)
-  is a safe, saved, 64-byte scratch per pattern.
-
-## The layout
-
-`digictl` keeps **25 parameters** there (8 + 2*25 = 58 of the 64 bytes):
+All params live in **one** MIDI track's 64-byte block:
 
 ```
-+0..3   "DGX1" magic
-+4..5   version (8)
-+6..7   count (25)
-+8..    25 x int16, big-endian, in DN_STORE order
+track_t = 0x3D0; MIDI track 4 (t = 7) -> pattern + 7*0x3D0 + 0x100 = pattern + 0x1BB0
 ```
 
-The 25 params are ring (on, depth, rate), EQ (on, lo, hi), fold (on, amount,
-mode), meter (on), the parked LFO bridge (dest, voice), **crush** (on, mode,
-amount, tune) and **wave** (on, pmode, smode, page, speed, pitch depth, stereo
-depth, mix, fb). Older versions: 3 dropped the per-voice-filter params, 6 added
-CRUSH/WAVE, 7 added the split WAVE page/mode params, 8 split the WAVE depth into
-an independent **pitch** depth and **stereo** depth. An older block fails the
-magic check and is treated as a fresh pattern, so it starts from the live
-values.
+Reserve that track on **MIDI channel 16** and leave it alone. The store writes
+only `pattern + 0x1BB0`; the other three MIDI-track blocks and every synth track
+are untouched, so channels 1-15 are unaffected.
 
-## The sync and the adopt guard
+The 51 params are **packed** (1-7 bits each, `dn_stbits`) into the block:
 
-`ev_tick` (one UI frame) runs `dn_store_sync()`:
+```
++0..3   "DGX4" magic
++4      version (1)
++5..6   count (51)
++7..    bitstream, little-endian, 1-7 bits per param
+```
 
-- **new pattern pointer** (switch / first sync): if the magic is present, load
-  the block into the globals; otherwise write the globals (a fresh pattern
-  adopts the live values);
-- **a page edit** (`dn_store_dirty`, set by every encoder/key/CC branch): write
-  the globals into the block;
-- **the block changed behind us**: adopt it **only if it still carries the
-  `"DGX1"` magic** (a genuine pattern reload the OS rewrote). If the magic is
-  gone, a **stock write** landed in that memory — reclaim our block instead of
-  reading it. This guard is what stops a stock OS event (a PAGE press, a MIDI
-  action, …) from jumping our parameters.
+260 bits -> 33 bytes + 7-byte header = 40 of the 64 bytes; the tail is cleared.
 
-Because the block is part of the saved pattern struct, the values follow a
-pattern switch / reload and travel with a project save, exactly like stock
-parameters. New patterns (no magic) start from whatever the mods currently hold,
-so the sound never jumps.
+`ev_tick` runs `dn_store_sync()`: on a pattern switch it loads a block carrying
+`"DGX4"` (or adopts the live values for a fresh pattern); a page/CC edit writes
+the globals into the block; a block whose magic is gone (a stock write) is
+reclaimed instead of read. The old blocks at `+0x1040/+0x1410/+0x17E0` are never
+read or written again.
+
+## Digitakt port
+
+The DT1 has no equivalent MIDI-track block; its store stays a **mod-owned RAM
+table** (`dn_tab[128][48]` in `.bss`, keyed by `*0x4199dc44`). RAM-only, no stock
+memory read or written, and no conflict with the kit spare that other mods use.
 
 ## The PERFORM page momentary pads
 
-The PERFORM page's 16 trig pads (`pf_apply` in `digictl.c`) override a block's
-depth only while the pad is held (and the short release ramp), restoring the
-saved value afterwards. They **never set `dn_store_dirty`** and never write the
-block, so a pad is a live gesture: the pattern value is always the resting
-position, and a save taken during a pad still stores the pattern value. The pad
-state lives in plain `.bss` (`pf_*`), not in the store.
+Unchanged. The 16 trig pads (`pf_apply` in `digictl.c`) override a block's depth
+only while the pad is held (and the short release ramp), restoring the saved
+value afterwards. They **never set `dn_store_dirty`** and never write the store,
+so the pattern value is always the resting position. Pad state lives in plain
+`.bss` (`pf_*`).
 
 ## Verified in digiemu
 
-`dn1-3.1i` (core-dn1-2.0a + the merged suite, digictl 2.0): at boot the current
-pattern's block holds `"DGX1"` v7 + the defaults; editing a global writes it on
-the tick; poking the block with a valid magic reloads it; a non-DGX1 write is
-ignored/reclaimed (the stock-event guard).
-
-## Risks / open items
-
-- The MIDI-track block was measured on **unconfigured** tracks. A *configured*
-  MIDI track may write there. The 3.1i magic guard prevents a jumped param, but
-  if a clash is found, move the store to another zero run (the other three MIDI
-  blocks `+0x1410`, `+0x17E0`, `+0x1BB0`, or the 81-byte runs at
-  `+0x0E7BA`/`+0x11009`/`+0x13858`/`+0x160A7`).
-- Power-off persistence relies on the OS saving the pattern struct (auto-save of
-  the temp project); confirmed per-pattern in digiemu, not yet on hardware.
-- The store is per pattern, not the "reload pattern" backup the OS may keep in a
-  separate copy; the adopt guard covers a reload that rewrites the struct.
+- **Digitone `dn1-4.0a`** (core-dn1 4.0 + the suite): the blocks at
+  `+0x1040/+0x1410/+0x17E0` carry no magic and stay clean; `+0x1BB0` carries
+  `"DGX4"`; an edit is saved; a value set on one pattern does not leak to
+  another; a return reloads it.
+- **Digitakt `dt1-4.0a`**: a param edit lands in `dn_tab[slot]`; the kit spare at
+  `+0x530` is untouched.

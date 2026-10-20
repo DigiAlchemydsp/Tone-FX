@@ -1,6 +1,6 @@
 {
  "id": "tonefx",
- "version": "4.0a",
+ "version": "4.0b",
  "title": "Tone+FX",
  "category": "Sound",
  "author": "Digital Alchemy DSP (DT1 port: gdeo607)",
@@ -119,7 +119,7 @@
    "ui:master DIGI CRUSH",
    "ui:master DIGI WAVE",
    "ui:master PERFORM",
-   "kit:+0x530 (RAM-only, per pattern)",
+   "per-pattern RAM table (dn_tab, RAM-only)",
    "render:master mix (0x400721e6)"
   ]
  },

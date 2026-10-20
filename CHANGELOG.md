@@ -1,5 +1,37 @@
 # Changelog
 
+## 4.0b — per-pattern store + macro rework (MIDI-channel / PAGE-jump fix)
+
+Packages: `core-dn1-4.0`, `tonefx-4.0b` (Digitone 1.43) and `tonefx-4.0b-os1.44`
+(Digitone 1.44); `core-4.0`, `tonefx-4.0b-dt` (Digitakt 1.53) and
+`tonefx-4.0b-dt-os1.54` (Digitakt 1.54).
+
+- **Digitone: all FX params now ride the pattern in ONE reserved MIDI track.**
+  The old scheme spread them over the MIDI-track blocks at
+  `pattern+0x1040/+0x1410/+0x17E0` (`"DGX1/2/3"`, MIDI tracks 1-3); a
+  *configured* MIDI track writes its channel/page there, so the stock data and
+  our values corrupted each other — the reported **jumping FX values and moved
+  MIDI channels / pages**. The 51 params are now packed (1-7 bits each) into
+  **MIDI track 4's block at `pattern+0x1BB0`** (`"DGX4"`, v1), reserved on
+  **MIDI channel 16**. Only that one track is touched; MIDI tracks 1-3
+  (channels 1-15) and the synth tracks are never read or written. The params
+  save and reload with the pattern (pattern switch, reload, project save).
+- **Digitakt: the store stays a mod-owned RAM table** (`dn_tab[128][48]` in
+  `.bss`, keyed by `*0x4199dc44`) — no equivalent MIDI-track block exists, and
+  this avoids the kit spare contested by other mods. RAM-only.
+- Digitone `.bss` stays ~19.4 KB (3.5r) / ~47.2 KB (4.0a); the packed block
+  adds no table. Digitakt `.bss` ~51.2 KB. Both still `imports nothing`.
+- Verified in digiemu (`dn1-4.0a`): the old blocks carry no magic and stay clean;
+  `+0x1BB0` carries `"DGX4"`; an edit is saved; a value set on one pattern does
+  not leak to another; a return reloads it. See `docs/PATTERN-STORAGE.md`.
+- **Macros:** **WASH** now drives **WAVE WOB only** (75% depth / 30% rate at
+  full) plus the **WRMZ delay's MIX and FB**, and its graphic is a full-screen
+  Haze dot cloud (56 dots, cheap). **RADIO** now uses an **EQ tilt** (low → 0,
+  high → 127 at full), TRSH fold drive and **SRR-only** crush at a lower amount.
+  Macro capture/restore is now **per engine**: an engine a macro does not drive
+  is left live, so **CRUSH/REDUX is no longer tied to WASH**; the WRMZ
+  on/mode/mix/fb are captured when WASH drives them.
+
 ## 4.0a — DELAYS (WRMZ / GRAINZ) + CPU pass
 
 Packages: `core-dn1-4.0`, `tonefx-4.0a` (Digitone 1.43) and `tonefx-4.0a-os1.44`

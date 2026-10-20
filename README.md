@@ -2,7 +2,7 @@
 
 **A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44) and the Digitakt mk1 (OS 1.53 and 1.54), with a new DELAYS module (WRMZ / GRAINZ).**
 
-Tone+FX 4.0a is a set of [elekloader](https://github.com/irpina/elekloader) mods,
+Tone+FX 4.0b is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 **packaged and released together as one suite**. It adds master ring modulation,
 a low/high-shelf EQ, a Crunch/Redux lo-fi stage, a wavefolder with four fold
 modes (plus an internal overdrive), a modulation insert with five modes (wobble,
@@ -14,11 +14,11 @@ plus four one-slider **macro** pages — **WASH / RADIO / DESTROY / SPACE**) and
 animated TONE+FX boot splash.
 
 **Four OS files, two hosts.** On the **Digitone mk1 / Digitone Keys** take
-`tonefx-4.0a.elemod` (OS 1.43) or `tonefx-4.0a-os1.44.elemod` (OS 1.44). On the
+`tonefx-4.0b.elemod` (OS 1.43) or `tonefx-4.0b-os1.44.elemod` (OS 1.44). On the
 **Digitakt mk1** — **gdeo607**'s port, source mirrored under
-[`DIGITAKT PORT/`](DIGITAKT%20PORT/) — take `tonefx-4.0a-dt.elemod` (OS 1.53) or
-`tonefx-4.0a-dt-os1.54.elemod` (OS 1.54); both now carry the DELAYS module and the
-CPU pass too. Each links as `core 4.0 > tonefx 4.0a` and patches
+[`DIGITAKT PORT/`](DIGITAKT%20PORT/) — take `tonefx-4.0b-dt.elemod` (OS 1.53) or
+`tonefx-4.0b-dt-os1.54.elemod` (OS 1.54); both now carry the DELAYS module and the
+CPU pass too. Each links as `core 4.0 > tonefx 4.0b` and patches
 **byte-for-byte** against its own stock file. See
 [its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md).
 
@@ -80,8 +80,8 @@ Macro tree (the static PERFORM page and the four one-slider macros):
 | ![PERFORM page](Screenshots/PERFORM.png) | ![WASH macro page](Screenshots/WASH.png) | ![RADIO macro page](Screenshots/RADIO.png) | ![DESTROY macro page](Screenshots/DESTROY.png) | ![SPACE macro page](Screenshots/SPACE.png) |
 
 Each macro page is one vertical slider (**A** on/off, **B–H** amount) plus a
-per-page graphic: **WASH** (wobble + SRR + EQ tilt), **RADIO** (band cut + TRSH
-fold + crush), **DESTROY** (fold + bits + ring), **SPACE** (WAVE stereo width).
+per-page graphic: **WASH** (wobble + WRMZ wash), **RADIO** (EQ tilt + TRSH
+fold + SRR), **DESTROY** (fold + bits + ring), **SPACE** (WAVE stereo width).
 
 Any page whose section is switched off draws a small framed **OFF** box; a page
 driven by a macro page draws a **MACRO** box in the same slot.
@@ -92,10 +92,10 @@ driven by a macro page draws a **MACRO** box in the same slot.
 
 | file | device | OS | required core |
 |---|---|---|---|
-| [`tonefx-4.0a.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
-| [`tonefx-4.0a-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
-| [`tonefx-4.0a-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
-| [`tonefx-4.0a-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
+| [`tonefx-4.0b.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
+| [`tonefx-4.0b-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
+| [`tonefx-4.0b-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
+| [`tonefx-4.0b-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
 
 Each bundles every mod below into a single elekloader mod, so it **combines with
 your other mods**. None includes the required core — install the matching core
@@ -130,10 +130,10 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
    elekloader builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock file, then **+ Install from file…** and
    pick the matching **core** (elekloader ships it) and **suite**:
-   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-4.0a.elemod`
-   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-4.0a-os1.44.elemod`
-   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-4.0a-dt.elemod`
-   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-4.0a-dt-os1.54.elemod`
+   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-4.0b.elemod`
+   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-4.0b-os1.44.elemod`
+   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-4.0b-dt.elemod`
+   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-4.0b-dt-os1.54.elemod`
    Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
@@ -143,12 +143,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell (OS 1.43)
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 4.0a
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 4.0b
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 4.0a
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 4.0b
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -182,9 +182,11 @@ stock key or encoder is taken.
 Every parameter is **0–127** and moves **one step per notch** — the stock
 convention (EQ LOW/HIGH are 0–127 with **64 = flat**).
 
-**Per-pattern settings** (store block 1 `"DGX1"` **v10** + block 2 `"DGX2"`
-**v2**): the settings — including the macro pages — follow a pattern switch /
-reload and travel with a project save, like stock parameters. Each page
+**Per-pattern settings** (Digitone: one reserved MIDI track, channel 16, packed;
+Digitakt: a mod-owned RAM table): the settings — including the macro pages —
+save and reload with the pattern. On the Digitone only that one MIDI track is
+touched, so channels 1-15 and the synth tracks are unaffected; a fresh pattern
+adopts the live values. Each page
 **true-bypasses** when its **A** is off (fades out, then stops using CPU). An FX
 or macro page that is off draws a framed **OFF** box; a page driven by a macro
 page draws a **MACRO** box.
@@ -305,8 +307,8 @@ engines while it is on and restores them when it turns off.
 
 | page | graphic | what it drives |
 |---|---|---|
-| **WASH** | shore band | wobble (WAVE WOB) + SRR (CRUSH REDUX) + an EQ tilt |
-| **RADIO** | big ring + cone | a band cut (EQ) + TRSH fold drive + CRUSH |
+| **WASH** | drifting dots (Haze) | WAVE wobble (75% depth / 30% rate at full) + WRMZ delay mix/feedback |
+| **RADIO** | big ring + cone | EQ tilt (low to 0, high to 127 at full) + TRSH fold drive + SRR |
 | **DESTROY** | stair-stepped sine | fold + bit-reduction + ring modulator |
 | **SPACE** | splitting centre line | WAVE stereo width |
 
@@ -352,8 +354,8 @@ flanger-feedback / pitch-shift / drive setting cannot hard-clip.
 **3.5p performance pass** (measured; nothing audible changes): page graphics draw
 straight to the framebuffer instead of one firmware call per pixel (36 call sites
 → 0); the output meter only scans while its page is up; block-constant branches in
-CRUSH/FOLD are hoisted; the per-pattern store only fully compares every few UI
-ticks; and the WAVE delay line is shorter. Net: the suite's RAM state dropped to
+CRUSH/FOLD are hoisted; the per-pattern store is gated off the UI tick; and the
+WAVE delay line is shorter. Net: the suite's RAM state dropped to
 **19,446 bytes** (−6.1 KB) and it still `imports nothing`. Full ledger in the
 source repo's `docs/OPTIMIZATION.md`.
 
@@ -409,9 +411,10 @@ Tracked as they come up; nothing here blocks normal use.
 
 **Bugs / rough edges we want fixed**
 
-- **PAGE still jumps some FX levels:** pressing the **PAGE** key can still push
-  some DIGI parameters to a high value — the stock-event store guard does not
-  cover every path yet.
+- ~~**PAGE still jumps some FX levels:** pressing the **PAGE** key could push
+  some DIGI parameters to a high value — the stock-event store guard did not
+  cover every path.~~ **Fixed** — the per-pattern store is now a mod-owned RAM
+  table; no stock event can reach a DIGI parameter.
 - **PITCH fires on a note-off:** a **PHASER** trig can activate the PITCH (WAVE)
   effect on the **note-off** message instead of on the note.
 - ~~**Microtiming / locked trigs on MIDI tracks:** LEFT / RIGHT would not nudge a
@@ -432,12 +435,14 @@ Tracked as they come up; nothing here blocks normal use.
   flanger.
 - **PERFORM trig LEDs:** the pads do not yet light the trig keys (yellow) — a
   planned follow-up, once the Digitone LED driver is reverse-engineered.
-- **Configured-MIDI-track store risk:** the per-pattern block lives in an unused
-  MIDI-track area that was zero on *unconfigured* tracks; a magic guard protects
-  it, but if a configured MIDI track is found to write there, the block must move.
-- **Power-off persistence** rides on the OS saving the temp project; a project
-  round-trip is confirmed per pattern in the emulator, not yet exhaustively on
-  hardware.
+- ~~**Configured-MIDI-track store risk:** the per-pattern block lived in an unused
+  MIDI-track area that was zero on *unconfigured* tracks; a configured MIDI track
+  wrote its channel/page there, so the stock data and our values corrupted each
+  other.~~ **Fixed** — the store moved to a mod-owned RAM table (digictl 2.8);
+  the MIDI-track pattern bytes are no longer read or written.
+- **Pattern persistence is RAM-only:** the FX settings follow a pattern switch in
+  a session but are not carried over a power cycle or a project load — the price
+  of never touching stock pattern data.
 
 **Wanted next (features / quality)**
 

@@ -281,8 +281,11 @@ def spin(m, pc, *args, **kw):
                 log.append("page %-10s no master view drawn yet" % act[1])
         elif k == "store":
             kit = struct.unpack(">I", uc.mem_read(fw(0x4199dc44), 4))[0]
-            blk = bytes(uc.mem_read(kit + 0x530, 34))
-            log.append("kit %08x +0x530: %s" % (kit, blk.hex()))
+            spare = bytes(uc.mem_read(kit + 0x530, 3))
+            tab = sym("dn_tab")
+            row = struct.unpack(">8h", uc.mem_read(tab, 16)) if tab else ()
+            log.append("kit %08x +0x530 first3 %s (untouched); dn_tab[0][0:8] %s"
+                       % (kit, spare.hex(), row))
         elif k == "cctab":                         # the firmware's CC -> parameter tables (built at boot, in RAM)
             for nm, ad, cnt in (("audio tracks", 0x4199f85c, 128), ("MIDI tracks", 0x4199f050, 128),
                                 ("auto channel", 0x419a0068, 128)):

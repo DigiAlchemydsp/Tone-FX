@@ -170,34 +170,21 @@ int digimod_voice = 1;               /* 1..8 */
  * digimod_dest). The two params are still kept in the store, as on the original. */
 
 /* ---- per-pattern storage -----------------------------------------------------
- * Our FX params have no stock field, so they are kept with the pattern. On the
- * original they live in a 64-byte block the four MIDI tracks leave unused in
- * the saved pattern struct ("DGX1" v7: magic, version, count, 24 x int16).
- *
- * DT1 port: each pattern has its own kit object (128 kits at 0x4191e018 +
- * pattern * 0x91e on OS 1.53, 4 KB further on 1.54; *0x4199dc44 is the current
- * pattern's), and kit + 0x530 .. 0x551 is 34 bytes the firmware neither uses nor
- * saves: zero in every kit (docs/TECHNICAL_NOTES.md, "What the +Drive
- * actually stores of a kit"). The same 24 params fit as one byte each (they are
- * all 0..127), so the block there is "DX" + version 7 + count 24 + 24 bytes =
- * 28 bytes. It follows a pattern switch, as on the original; it is RAM-only, so
- * the settings are kept while the unit is on but not over a power cycle or a
- * project load (a pattern with no block adopts the live values, as on the
- * original). The sync and the adopt guard are the original's. */
+ * Our FX params have no stock field, so they are kept per pattern in a table of
+ * our own, keyed by the pattern index the current kit object belongs to
+ * (*0x4199dc44). This replaces the old trick of packing them into the kit's RAM
+ * spare bytes (kit + 0x530, "DX" v9): other mods (Digi Matrix, Digi Poly, ...)
+ * claim the same spare, so the packings corrupted one another. The table is
+ * RAM-only (the spare was too): values follow a pattern switch and last the
+ * session, and a pattern not seen yet (or after a power cycle / project load)
+ * adopts the live values, so the sound never jumps. Only the read-only kit
+ * pointer is touched -- no stock memory is written or read. */
 #define DT_UI_KIT     (*(unsigned char *volatile *)F_4199dc44)
 #define DT_KIT0       ((unsigned)F_4191e018)
 #define DT_KIT_STEP   0x91eu
 #define DN_PAT_SLOTS  128u
-/* DT1 port: 3.5r has 35 params; the kit's RAM-only spare is 34 bytes
- * (kit + 0x530 .. 0x551). They are stored 7 bits each, packed, after a 3-byte
- * header ("DX" + version): ceil(35 * 7 / 8) = 31 bytes, 34 in all. Everything
- * (including the four macros and the WAVE dry/wet) stays per-pattern. */
-#define DN_STORE_OFF  0x530u
+
 #define DN_STORE_N    48
-#define DN_STORE_VER  9
-#define DN_STORE_LEN  34
-#define DN_STORE_MAG(a) ((a)[0] == 0x44 && (a)[1] == 0x58 && \
-                         (a)[2] == DN_STORE_VER)               /* "DX" v9 */
 
 static int *const dn_fxparam[DN_STORE_N] = {
     &digiring_on, &digiring_depth, &digiring_freq,
@@ -218,105 +205,60 @@ static int *const dn_fxparam[DN_STORE_N] = {
     &digigrainz_dens, &digigrainz_size, &digigrainz_pitch,
     &digigrainz_spray, &digigrainz_fb, &digigrainz_mix,
 };
-/* Bits per param: 1 for the on/off/switch params, 7 for the 0..127 values.
- * The 15 one-bit params (vs 7) free enough of the 34-byte spare for the DELAYS
- * block; the two parked LFO-bridge params (digimod_dest/voice, always 0 on the
- * DT1) are dropped. 15*1 + 33*7 = 246 bits -> 31 bytes + 3 header = 34. */
-static const unsigned char dn_stbits[DN_STORE_N] = {
-    /* ring */ 1,7,7, /* eq */ 1,7,7, /* fold */ 1,7,7, /* meter */ 1,
-    /* crush */ 1,7,7,7,
-    /* wave */ 1,1,7,7,1, 7,7,7, 7,7,7,
-    /* macros */ 1,7, 1,7, 1,7, 1,7,
-    /* delays */ 1,1,1, 7,7,7,7,7,7, 7,7,7,7,7,7
-};
 
-static unsigned char *dn_store_blk;             /* block we last synced */
-static unsigned char dn_store_copy[DN_STORE_LEN];
+static short dn_tab[DN_PAT_SLOTS][DN_STORE_N];
+static unsigned char dn_seen[DN_PAT_SLOTS];
+static int dn_slot = -1;                        /* slot the globals belong to */
 static int dn_store_dirty;                      /* a page edit is pending */
-static int dn_sync_ph;                          /* ticks between block compares */
 
-static unsigned char *dn_store_slot(void)
+static int dn_cur_slot(void)
 {
     unsigned p = (unsigned)DT_UI_KIT;
     if (p < DT_KIT0 || p >= DT_KIT0 + DN_PAT_SLOTS * DT_KIT_STEP ||
         (p - DT_KIT0) % DT_KIT_STEP)
-        return 0;
-    return (unsigned char *)(p + DN_STORE_OFF);
+        return -1;
+    return (int)((p - DT_KIT0) / DT_KIT_STEP);
 }
 
-/* DN_STORE_N params, dn_stbits[i] bits each, little-endian bitstream after b[2]. */
-static void dn_store_read(const unsigned char *b)
+static void dn_tab_save(int s)
 {
-    unsigned acc = 0;
-    int nbits = 0, i, o = 3;
-    for (i = 0; i < DN_STORE_N; i++) {
-        int w = dn_stbits[i];
-        while (nbits < w) { acc |= (unsigned)b[o++] << nbits; nbits += 8; }
-        *dn_fxparam[i] = (int)(acc & ((1u << w) - 1u));
-        acc >>= w;
-        nbits -= w;
-    }
+    int i;
+    if (s < 0)
+        return;
+    for (i = 0; i < DN_STORE_N; i++)
+        dn_tab[s][i] = (short)*dn_fxparam[i];
+    dn_seen[s] = 1;
 }
 
-static void dn_store_write(unsigned char *b)
+static void dn_tab_load(int s)
 {
-    unsigned acc = 0;
-    int nbits = 0, i, o = 3;
-    b[0] = 0x44; b[1] = 0x58;                             /* "DX" */
-    b[2] = DN_STORE_VER;
-    for (i = 0; i < DN_STORE_N; i++) {
-        int w = dn_stbits[i];
-        acc |= (unsigned)(*dn_fxparam[i] & ((1u << w) - 1u)) << nbits;
-        nbits += w;
-        while (nbits >= 8) {
-            b[o++] = (unsigned char)(acc & 0xff);
-            acc >>= 8;
-            nbits -= 8;
-        }
-    }
-    if (nbits)
-        b[o++] = (unsigned char)(acc & 0xff);
+    int i;
+    for (i = 0; i < DN_STORE_N; i++)
+        *dn_fxparam[i] = dn_tab[s][i];
 }
 
-/* Once a UI frame: follow a pattern switch, persist a page edit, and adopt an
- * external change (a pattern reload) the OS made behind us. */
+/* Once a UI frame: follow a pattern switch and flush a pending page edit. The
+ * table is ours alone, so there is no adopt guard to run. */
 static void dn_store_sync(void)
 {
-    unsigned char *b = dn_store_slot();
-    int i;
-    if (!b)
-        return;
-    if (b == dn_store_blk) {
-        if (dn_store_dirty) {
-            dn_store_write(b);
-        } else if (dn_sync_ph++ & 7) {
-            return;                          /* nothing pending and no pattern
-                                              * switch: compare only every 8th
-                                              * tick (the adopt guard stays) */
-        } else {
-            for (i = 0; i < DN_STORE_LEN; i++)
-                if (b[i] != dn_store_copy[i])
-                    break;
-            if (i < DN_STORE_LEN) {          /* the block changed: only adopt
-                                              * it if it is still ours. A stock
-                                              * write here must NOT reach our
-                                              * params -- reclaim the block. */
-                if (DN_STORE_MAG(b))
-                    dn_store_read(b);
-                else
-                    dn_store_write(b);
-            }
+    int s = dn_cur_slot();
+    if (s != dn_slot) {
+        if (dn_slot >= 0 && dn_store_dirty)
+            dn_tab_save(dn_slot);           /* flush the pattern we are leaving */
+        dn_slot = s;
+        if (s >= 0) {
+            if (dn_seen[s])
+                dn_tab_load(s);             /* seen: restore its values */
+            else
+                dn_tab_save(s);             /* fresh: adopt the live values */
         }
-    } else {
-        dn_store_blk = b;                    /* pattern switch / first sync */
-        if (DN_STORE_MAG(b))
-            dn_store_read(b);
-        else
-            dn_store_write(b);               /* new pattern: adopt live values */
+        dn_store_dirty = 0;
+        return;
     }
-    dn_store_dirty = 0;
-    for (i = 0; i < DN_STORE_LEN; i++)
-        dn_store_copy[i] = b[i];
+    if (s >= 0 && dn_store_dirty) {
+        dn_tab_save(s);
+        dn_store_dirty = 0;
+    }
 }
 
 static int clampi(int v, int lo, int hi);
@@ -533,67 +475,109 @@ static void pf_apply(void)
 }
 
 /* ---- MACRO pages: one value drives a bundle of engines -----------------------
- * Each macro reuses the effects; the engines any of them touches are captured
- * when the first turns on and restored when the last turns off. Runs in
- * ev_render_in; a single flag test when none are on.
- *   WASH    = wobble (WAVE WOB) + SRR (crush SR, capped) + EQ tilt (hi+ / lo-)
- *   RADIO   = bandpass (EQ lo- hi-) + drive (fold) + bits (crush)
+ * Each macro drives its own engines; a group is captured the first block a macro
+ * needs it and restored the block no macro needs it any more. An engine a macro
+ * does not drive is left live -- e.g. CRUSH/REDUX stays on the knobs while WASH
+ * is on. Runs in ev_render_in; a single flag test when none are on.
+ *   WASH    = wobble only (WAVE WOB, 75% depth / 30% rate at full) + WRMZ wash
+ *   RADIO   = EQ tilt (low -> 0, high -> 127) + drive (fold) + SRR (crush)
  *   DESTROY = fold + bits (crush) + ring
  *   SPACE   = stereo width (WAVE WIDE)
  * RADIO/DESTROY/SPACE are a test build: their state is .bss, not stored yet. */
-#define MW_SRR   10                         /* SRR amount at full WASH (0..127) */
-#define MW_TILT  24                         /* EQ tilt at full WASH */
-static int mw_was;
+#define MW_WOB_DEP   95                     /* WASH wobble depth at full (75% of 127) */
+#define MW_WOB_RATE  38                     /* WASH wobble rate at full (30% of 127) */
+#define MW_DLY_MIX   96                     /* WRMZ mix at full WASH */
+#define MW_DLY_FB    64                     /* WRMZ feedback at full WASH (~0.40) */
+#define MW_RAD_SRR   40                     /* RADIO SRR amount at full (dialed down) */
+#define MG_WAVE   1                         /* engine-group bits */
+#define MG_CRUSH  2
+#define MG_FOLD   4
+#define MG_RING   8
+#define MG_EQ     16
+#define MG_WRMZ   32
+static int mw_drv;                          /* groups driven last block */
 static int mb_wav_on, mb_wav_son, mb_wav_page, mb_wav_pmode, mb_wav_smode;
 static int mb_wav_pd, mb_wav_sd, mb_wav_mix, mb_wav_fb, mb_wav_spd;
 static int mb_cru_on, mb_cru_mode, mb_cru_amt, mb_cru_tune;
 static int mb_fold_on, mb_fold_amt, mb_fold_mode;
 static int mb_rng_on, mb_rng_dep, mb_rng_frq;
 static int mb_eq_on, mb_eq_lo, mb_eq_hi;
+static int mb_dly_on, mb_dly_mode, mb_dly_mix, mb_dly_fb;
 
-static void mw_capture(void)
+static void mw_cap(int g)
 {
-    mb_wav_on = digiwave_on; mb_wav_son = digiwave_son; mb_wav_page = digiwave_page;
-    mb_wav_pmode = digiwave_pmode; mb_wav_smode = digiwave_smode;
-    mb_wav_pd = digiwave_pdepth; mb_wav_sd = digiwave_sdepth;
-    mb_wav_mix = digiwave_mix; mb_wav_fb = digiwave_fb; mb_wav_spd = digiwave_speed;
-    mb_cru_on = digicrush_on; mb_cru_mode = digicrush_mode;
-    mb_cru_amt = digicrush_amount; mb_cru_tune = digicrush_tune;
-    mb_fold_on = digifold_on; mb_fold_amt = digifold_amount; mb_fold_mode = digifold_mode;
-    mb_rng_on = digiring_on; mb_rng_dep = digiring_depth; mb_rng_frq = digiring_freq;
-    mb_eq_on = digieq_on; mb_eq_lo = digieq_lo; mb_eq_hi = digieq_hi;
+    if (g & MG_WAVE) {
+        mb_wav_on = digiwave_on; mb_wav_son = digiwave_son; mb_wav_page = digiwave_page;
+        mb_wav_pmode = digiwave_pmode; mb_wav_smode = digiwave_smode;
+        mb_wav_pd = digiwave_pdepth; mb_wav_sd = digiwave_sdepth;
+        mb_wav_mix = digiwave_mix; mb_wav_fb = digiwave_fb; mb_wav_spd = digiwave_speed;
+    }
+    if (g & MG_CRUSH) {
+        mb_cru_on = digicrush_on; mb_cru_mode = digicrush_mode;
+        mb_cru_amt = digicrush_amount; mb_cru_tune = digicrush_tune;
+    }
+    if (g & MG_FOLD) {
+        mb_fold_on = digifold_on; mb_fold_amt = digifold_amount; mb_fold_mode = digifold_mode;
+    }
+    if (g & MG_RING) {
+        mb_rng_on = digiring_on; mb_rng_dep = digiring_depth; mb_rng_frq = digiring_freq;
+    }
+    if (g & MG_EQ) {
+        mb_eq_on = digieq_on; mb_eq_lo = digieq_lo; mb_eq_hi = digieq_hi;
+    }
+    if (g & MG_WRMZ) {
+        mb_dly_on = digiwrmz_on; mb_dly_mode = digiwrmz_mode;
+        mb_dly_mix = digiwrmz_mix; mb_dly_fb = digiwrmz_fb;
+    }
 }
 
-static void mw_restore(void)
+static void mw_res(int g)
 {
-    digiwave_on = mb_wav_on; digiwave_son = mb_wav_son; digiwave_page = mb_wav_page;
-    digiwave_pmode = mb_wav_pmode; digiwave_smode = mb_wav_smode;
-    digiwave_pdepth = mb_wav_pd; digiwave_sdepth = mb_wav_sd;
-    digiwave_mix = mb_wav_mix; digiwave_fb = mb_wav_fb; digiwave_speed = mb_wav_spd;
-    digicrush_on = mb_cru_on; digicrush_mode = mb_cru_mode;
-    digicrush_amount = mb_cru_amt; digicrush_tune = mb_cru_tune;
-    digifold_on = mb_fold_on; digifold_amount = mb_fold_amt; digifold_mode = mb_fold_mode;
-    digiring_on = mb_rng_on; digiring_depth = mb_rng_dep; digiring_freq = mb_rng_frq;
-    digieq_on = mb_eq_on; digieq_lo = mb_eq_lo; digieq_hi = mb_eq_hi;
+    if (g & MG_WAVE) {
+        digiwave_on = mb_wav_on; digiwave_son = mb_wav_son; digiwave_page = mb_wav_page;
+        digiwave_pmode = mb_wav_pmode; digiwave_smode = mb_wav_smode;
+        digiwave_pdepth = mb_wav_pd; digiwave_sdepth = mb_wav_sd;
+        digiwave_mix = mb_wav_mix; digiwave_fb = mb_wav_fb; digiwave_speed = mb_wav_spd;
+    }
+    if (g & MG_CRUSH) {
+        digicrush_on = mb_cru_on; digicrush_mode = mb_cru_mode;
+        digicrush_amount = mb_cru_amt; digicrush_tune = mb_cru_tune;
+    }
+    if (g & MG_FOLD) {
+        digifold_on = mb_fold_on; digifold_amount = mb_fold_amt; digifold_mode = mb_fold_mode;
+    }
+    if (g & MG_RING) {
+        digiring_on = mb_rng_on; digiring_depth = mb_rng_dep; digiring_freq = mb_rng_frq;
+    }
+    if (g & MG_EQ) {
+        digieq_on = mb_eq_on; digieq_lo = mb_eq_lo; digieq_hi = mb_eq_hi;
+    }
+    if (g & MG_WRMZ) {
+        digiwrmz_on = mb_dly_on; digiwrmz_mode = mb_dly_mode;
+        digiwrmz_mix = mb_dly_mix; digiwrmz_fb = mb_dly_fb;
+    }
 }
 
 static void mw_one(int k, int a)
 {
-    int t;
     switch (k) {
-    case DN_WASHKIND:                   /* wobble + SRR + tilt */
-        t = a * MW_TILT / 127;
-        digiwave_on = 1; digiwave_page = 0; digiwave_pmode = 0; digiwave_pdepth = a;
-        digicrush_on = 1; digicrush_mode = 64; digicrush_amount = a * MW_SRR / 127;
-        digieq_on = 1; digieq_lo = 64 - t; digieq_hi = 64 + t;
+    case DN_WASHKIND:                   /* wobble only + the WRMZ wash */
+        digiwave_on = 1; digiwave_son = 0;
+        digiwave_page = 0; digiwave_pmode = 0;         /* PITCH group, WOB */
+        digiwave_pdepth = a * MW_WOB_DEP / 127;
+        digiwave_speed = a * MW_WOB_RATE / 127;
+        digiwrmz_on = 1; digiwrmz_mode = 0;            /* WRMZ */
+        digiwrmz_mix = a * MW_DLY_MIX / 127;
+        digiwrmz_fb = a * MW_DLY_FB / 127;
         break;
-    case DN_RADKIND:                    /* radio: deep band cut + fold drive + crunch */
-        t = a * 52 / 127;               /* push both shelves well down */
-        digieq_on = 1; digieq_lo = 64 - t; digieq_hi = 64 - t;
-        digifold_on = 1; digifold_mode = 127;               /* TRSH: full fold + OD */
+    case DN_RADKIND:                    /* AM radio: tilt + drive + SRR */
+        digieq_on = 1;
+        digieq_lo = 64 - a * 64 / 127;                 /* low -> 0 at full */
+        digieq_hi = 64 + a * 63 / 127;                 /* high -> 127 at full */
+        digifold_on = 1; digifold_mode = 127;          /* TRSH: full fold + OD */
         digifold_amount = a * 110 / 127;
-        digicrush_on = 1; digicrush_mode = 106;             /* CRUNCH: hard clip */
-        digicrush_amount = a * 72 / 127;                    /* (was 90, -20%) */
+        digicrush_on = 1; digicrush_mode = 64;         /* SRR only */
+        digicrush_amount = a * MW_RAD_SRR / 127;       /* dialed down from 72 */
         break;
     case DN_DESKIND:                    /* fold + bits + ring */
         digifold_on = 1; digifold_amount = a * 60 / 127;
@@ -608,15 +592,21 @@ static void mw_one(int k, int a)
 
 static void mw_apply(void)
 {
-    int any = digiwash_on || dgmac2_on || dgmac3_on || dgmac4_on;
-    if (any && !mw_was)
-        mw_capture();
-    if (any) {
-        /* Rebuild the layer from the captured base every block, then apply each
-         * active macro. Without this the engines a macro touched stayed "on"
-         * after it was switched off while another macro was still active (e.g.
-         * switch WASH off with RADIO on and the WOB wobble kept running). */
-        mw_restore();
+    int d = 0, stop, start;
+    if (digiwash_on) d |= MG_WAVE | MG_WRMZ;
+    if (dgmac2_on)   d |= MG_EQ | MG_FOLD | MG_CRUSH;
+    if (dgmac3_on)   d |= MG_FOLD | MG_CRUSH | MG_RING;
+    if (dgmac4_on)   d |= MG_WAVE;
+
+    stop = mw_drv & ~d;                 /* no macro needs it now: restore once */
+    if (stop)
+        mw_res(stop);
+    start = d & ~mw_drv;                /* a macro needs it now: capture the base */
+    if (start)
+        mw_cap(start);
+
+    if (d) {                            /* rebuild the driven groups, then apply */
+        mw_res(d);
         if (digiwash_on)
             mw_one(DN_WASHKIND, digiwash_amount);
         if (dgmac2_on)
@@ -625,10 +615,8 @@ static void mw_apply(void)
             mw_one(DN_DESKIND, dgmac3_amount);
         if (dgmac4_on)
             mw_one(DN_SPCKIND, dgmac4_amount);
-    } else if (mw_was) {
-        mw_restore();
     }
-    mw_was = any;
+    mw_drv = d;
 }
 
 static int *mw_onp(int k)
@@ -1408,28 +1396,17 @@ static void dg_macro_frame(void *bmp, const char *title, int on, int amt)
     DN_TEXTF(bmp, DN_FONT5, (128 - dg_strw(title, 1)) / 2, 24, -1, "%s", title);
 }
 
-/* WASH ??? shore: a filled band whose wavy top rises, wanders and distorts. */
+/* WASH - a drifting cloud of dots filling the screen (a simpler "Haze"). */
 static void dg_wash_page(void *bmp)
 {
     int amt = digiwash_on ? digiwash_amount : 0;
-    int top = 6 + amt * 30 / 127;
-    int amp = 1 + amt * 7 / 127;
-    int wl = 22 - amt * 16 / 127;
-    int x;
-    if (wl < 6)
-        wl = 6;
+    int i;
     dg_fill(0, 0, 127, DG_TOP - 1, 0);
     dg_wa_ph += 1 + (amt >> 5);
-    for (x = 0; x <= 112; x += 4) {
-        int idx = ((x * 256) / wl + dg_wa_ph) & 0xff;
-        int s = sin256[idx];
-        int d2 = sin256[(idx * 3 + dg_wa_ph * 2) & 0xff];
-        int y;
-        s += (d2 * amt) >> 8;
-        y = top + ((s * amp) >> 15);
-        if (y < 0) y = 0;
-        if (y > DG_TOP - 1) y = DG_TOP - 1;
-        dg_fill(x, 0, x, y, 1);                   /* fill up to the surface */
+    for (i = 0; i < 56; i++) {
+        int x = (int)((i * 53 + dg_wa_ph * 2) % 128);
+        int y = (int)((i * 29 + dg_wa_ph) % (DG_TOP - 1));
+        dg_px(x, y);
     }
     dg_macro_frame(bmp, "WASH", digiwash_on, digiwash_amount);
 }
@@ -1579,17 +1556,18 @@ static void dg_delay_page(void *bmp)
 }
 
 /* Is this page's FX being driven (locked) by one of the macro pages? Matches
- * what mw_one() touches: WASH -> WAVE pitch + crush + EQ, RADIO -> EQ + fold +
+ * what mw_one() touches: WASH -> WAVE pitch (WOB) + WRMZ, RADIO -> EQ + fold +
  * crush, DESTROY -> fold + crush + ring, SPACE -> WAVE stereo. */
 static int dg_page_locked(int k)
 {
     switch (k) {
     case DN_FXKIND:   return dgmac3_on;                              /* DESTROY */
     case DN_FEKIND:   return dgmac2_on || dgmac3_on;                 /* RADIO, DESTROY */
-    case DN_EQKIND:   return digiwash_on || dgmac2_on;               /* WASH, RADIO */
-    case DN_CRKIND:   return digiwash_on || dgmac2_on || dgmac3_on;  /* WASH/RADIO/DESTROY */
+    case DN_EQKIND:   return dgmac2_on;                              /* RADIO */
+    case DN_CRKIND:   return dgmac2_on || dgmac3_on;                 /* RADIO, DESTROY */
     case DN_WVKIND:   return digiwash_on;                            /* WASH (WOB) */
     case DN_WSKIND:   return dgmac4_on;                              /* SPACE (WIDE) */
+    case DN_DLYKIND:  return digiwash_on;                            /* WASH (WRMZ) */
     default:          return 0;
     }
 }
