@@ -567,6 +567,7 @@ static void mw_one(int k, int a)
         digiwave_pdepth = a * MW_WOB_DEP / 127;
         digiwave_speed = a * MW_WOB_RATE / 127;
         digiwrmz_on = 1; digiwrmz_mode = 0;            /* WRMZ */
+        digiwrmz_mod = 0;                              /* static read: no interp */
         digiwrmz_mix = a * MW_DLY_MIX / 127;
         digiwrmz_fb = a * MW_DLY_FB / 127;
         break;

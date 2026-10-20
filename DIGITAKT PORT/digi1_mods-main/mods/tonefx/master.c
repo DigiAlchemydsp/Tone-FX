@@ -16,7 +16,8 @@ void digiring_render_out(void);
 void digieq_render_out(void);
 void digicrush_render_out(void);
 void digifold_render_out(void);
-void digiwave_render_out(void);
+void digiwave_pitch_render_out(void);
+void digiwave_stereo_render_out(void);
 void digiwrmz_render_out(void);
 void digictl_limit_out(void);
 void digimeter_render_out(void);
@@ -37,8 +38,9 @@ void tonefx_master(int *m)
     digieq_render_out();        /* 55 */
     digicrush_render_out();     /* 57 */
     digifold_render_out();      /* 60 */
-    digiwave_render_out();      /* 62 */
-    digiwrmz_render_out();      /* 63 */
+    digiwave_pitch_render_out();   /* 61 */
+    digiwrmz_render_out();         /* 62 */
+    digiwave_stereo_render_out();  /* 63 */
     digictl_limit_out();        /* 64 */
     digimeter_render_out();     /* 65 */
     bx_macsr_restore(macsr);

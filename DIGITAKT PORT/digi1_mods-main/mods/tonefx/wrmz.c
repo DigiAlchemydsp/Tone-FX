@@ -24,6 +24,7 @@ int digiwrmz_mod = 0;           /* 0..127 modulation depth */
 int digiwrmz_rate = 40;         /* 0..127 modulation rate */
 int digiwrmz_mix = 64;          /* 0..127 dry/wet */
 int digiwrmz_mode = 0;          /* 0 WRMZ, 1 GRAINZ */
+int digiwrmz_dcskip = 0;        /* WASH: skip the DC blocker (the saturator bounds FB) */
 
 int digigrainz_on = 0;          /* GRAINZ mode params (same line) */
 int digigrainz_dens = 64;       /* drift rate */
@@ -67,6 +68,7 @@ static int wz_lp;
 static int wz_dc[2];
 static int wz_mix;
 static int wz_lastmode = -1;
+static int wz_dcskip_last;
 
 void digiwrmz_render_in(void)
 {
@@ -76,7 +78,7 @@ void digiwrmz_render_in(void)
 void digiwrmz_render_out(void)
 {
     int *p;
-    int i, mode, on, mix_t, mstep, fb, lpc;
+    int i, mode, on, mix_t, mstep, fb, lpc, dcskip;
     unsigned inc, ph, mhz;
     int l0, l1, l2, ls0, ls1, ls2;
 
@@ -92,6 +94,11 @@ void digiwrmz_render_out(void)
         wz_lp = 0;
         wz_dc[0] = wz_dc[1] = 0;
         wz_lastmode = mode;
+    }
+    dcskip = digiwrmz_dcskip;
+    if (dcskip != wz_dcskip_last) {             /* entering / leaving WASH's skip */
+        wz_dc[0] = wz_dc[1] = 0;
+        wz_dcskip_last = dcskip;
     }
 
     /* WRMZ RAT / GRAINZ DEN: 0.1..3.0 Hz (milli-Hz) -- slower than before so
@@ -135,12 +142,17 @@ void digiwrmz_render_out(void)
             fr = dq & 0xfff;
             wet = span ? wz_rdi(wz_buf, idx, fr) : wz_rd(wz_buf, idx);
 
-            p[0] = l + bx_mul15(wet - l, wz_mix);
-            p[1] = r + bx_mul15(wet - r, wz_mix);
+            {
+                int q[2];
+                bx_mul15x2(wet - l, wet - r, wz_mix, q);   /* L/R MACs back to back */
+                p[0] = l + q[0];
+                p[1] = r + q[1];
+            }
             wz_lp = bx_lp_e(wz_lp, wet, lpc);
             {
                 int f = mono + bx_mul15(wz_lp, fb);
-                f = bx_dc_e(wz_dc, f);
+                if (!dcskip)
+                    f = bx_dc_e(wz_dc, f);
                 wz_buf[wz_w] = wz_mk(f);
             }
             if (wz_w == 0)
@@ -169,12 +181,17 @@ void digiwrmz_render_out(void)
                            wz_rd(wz_buf, (wz_w - (unsigned)d1) & WZ_MASK) +
                            wz_rd(wz_buf, (wz_w - (unsigned)d2) & WZ_MASK), 10923);
 
-            p[0] = l + bx_mul15(wet - l, wz_mix);
-            p[1] = r + bx_mul15(wet - r, wz_mix);
+            {
+                int q[2];
+                bx_mul15x2(wet - l, wet - r, wz_mix, q);   /* L/R MACs back to back */
+                p[0] = l + q[0];
+                p[1] = r + q[1];
+            }
             wz_lp = bx_lp_e(wz_lp, wet, lpc);
             {
                 int f = mono + bx_mul15(wz_lp, fb);
-                f = bx_dc_e(wz_dc, f);
+                if (!dcskip)
+                    f = bx_dc_e(wz_dc, f);
                 wz_buf[wz_w] = wz_mk(f);
             }
             if (wz_w == 0)

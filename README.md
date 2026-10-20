@@ -2,7 +2,7 @@
 
 **A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.43 and 1.44) and the Digitakt mk1 (OS 1.53 and 1.54), with a new DELAYS module (WRMZ / GRAINZ).**
 
-Tone+FX 4.0b is a set of [elekloader](https://github.com/irpina/elekloader) mods,
+Tone+FX 4.0c is a set of [elekloader](https://github.com/irpina/elekloader) mods,
 **packaged and released together as one suite**. It adds master ring modulation,
 a low/high-shelf EQ, a Crunch/Redux lo-fi stage, a wavefolder with four fold
 modes (plus an internal overdrive), a modulation insert with five modes (wobble,
@@ -14,11 +14,11 @@ plus four one-slider **macro** pages — **WASH / RADIO / DESTROY / SPACE**) and
 animated TONE+FX boot splash.
 
 **Four OS files, two hosts.** On the **Digitone mk1 / Digitone Keys** take
-`tonefx-4.0b.elemod` (OS 1.43) or `tonefx-4.0b-os1.44.elemod` (OS 1.44). On the
+`tonefx-4.0c.elemod` (OS 1.43) or `tonefx-4.0c-os1.44.elemod` (OS 1.44). On the
 **Digitakt mk1** — **gdeo607**'s port, source mirrored under
-[`DIGITAKT PORT/`](DIGITAKT%20PORT/) — take `tonefx-4.0b-dt.elemod` (OS 1.53) or
-`tonefx-4.0b-dt-os1.54.elemod` (OS 1.54); both now carry the DELAYS module and the
-CPU pass too. Each links as `core 4.0 > tonefx 4.0b` and patches
+[`DIGITAKT PORT/`](DIGITAKT%20PORT/) — take `tonefx-4.0c-dt.elemod` (OS 1.53) or
+`tonefx-4.0c-dt-os1.54.elemod` (OS 1.54); both now carry the DELAYS module and the
+CPU pass too. Each links as `core 4.0 > tonefx 4.0c` and patches
 **byte-for-byte** against its own stock file. See
 [its Tone+FX page](https://github.com/gdeo607/digi1_mods/blob/main/mods/tonefx/README.md).
 
@@ -92,10 +92,10 @@ driven by a macro page draws a **MACRO** box in the same slot.
 
 | file | device | OS | required core |
 |---|---|---|---|
-| [`tonefx-4.0b.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
-| [`tonefx-4.0b-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
-| [`tonefx-4.0b-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
-| [`tonefx-4.0b-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
+| [`tonefx-4.0c.elemod`](elemods/) | Digitone mk1 / Keys | 1.43 | `core-dn1-4.0.elemod` |
+| [`tonefx-4.0c-os1.44.elemod`](elemods/) | Digitone mk1 / Keys | 1.44 | `core-dn1-4.0-os1.44.elemod` |
+| [`tonefx-4.0c-dt.elemod`](elemods/) | Digitakt mk1 | 1.53 | `core-4.0.elemod` |
+| [`tonefx-4.0c-dt-os1.54.elemod`](elemods/) | Digitakt mk1 | 1.54 | `core-4.0-os1.54.elemod` |
 
 Each bundles every mod below into a single elekloader mod, so it **combines with
 your other mods**. None includes the required core — install the matching core
@@ -130,10 +130,10 @@ Everything is `GPL-2.0-or-later` (see [`LICENSE`](LICENSE)).
    elekloader builds a custom OS on your machine; it never distributes firmware.
 2. In elekloader's window, add the stock file, then **+ Install from file…** and
    pick the matching **core** (elekloader ships it) and **suite**:
-   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-4.0b.elemod`
-   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-4.0b-os1.44.elemod`
-   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-4.0b-dt.elemod`
-   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-4.0b-dt-os1.54.elemod`
+   - **Digitone 1.43** — `core-dn1-4.0.elemod` + `tonefx-4.0c.elemod`
+   - **Digitone 1.44** — `core-dn1-4.0-os1.44.elemod` + `tonefx-4.0c-os1.44.elemod`
+   - **Digitakt 1.53** — `core-4.0.elemod` + `tonefx-4.0c-dt.elemod`
+   - **Digitakt 1.54** — `core-4.0-os1.54.elemod` + `tonefx-4.0c-dt-os1.54.elemod`
    Add any of your other mods too.
 3. Tick the core and `tonefx`, set the OS version tag, and **BUILD FIRMWARE**.
 4. Flash the resulting `.syx` with Elektron Transfer, as for any OS update;
@@ -143,12 +143,12 @@ Or from the command line (elekloader from source):
 
 ```powershell
 # Windows PowerShell (OS 1.43)
-./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 4.0b
+./tools/build.ps1 -Stock "Digitone_and_Digitone_Keys_OS1.43.syx" -Out ToneFX.syx -Version 4.0c
 ```
 
 ```sh
 # POSIX
-sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 4.0b
+sh tools/build.sh Digitone_and_Digitone_Keys_OS1.43.syx ToneFX.syx 4.0c
 ```
 
 **Recovery** (the bootloader is never changed): hold **FUNC** while powering on
@@ -254,8 +254,10 @@ master FX.
 | `84` | DELAYS 3 (TON/PIT) | `85` | DELAYS 4 (MOD/SPR) |
 | `86` | DELAYS 5 (RAT/FB) | `87` | DELAYS 6 (MIX) |
 
-Signal order on the master mix is **ring → EQ → crush → fold → wave → WRMZ →
-ceiling → meter**. Ring, EQ and fold are on by default.
+Signal order on the master mix is permanent: **ring → EQ → crush → fold →
+PITCH → DELAYS (WRMZ/GRAINZ) → STEREO → ceiling → meter**. The WAVE insert is
+split into its PITCH and STEREO passes so the delay always sits between them.
+Ring, EQ and fold are on by default.
 
 ## Performance controls
 

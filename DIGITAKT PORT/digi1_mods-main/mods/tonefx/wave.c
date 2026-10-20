@@ -212,14 +212,17 @@ static void wv_flush(int mode)
     wv_primed = 0;
 }
 
-void digiwave_render_out(void)
+static void wave_group(int page)
 {
     int *p, i;
-    int mode;
-    int depth = digiwave_page ? digiwave_sdepth : digiwave_pdepth;
-    int on = (digiwave_page ? digiwave_son : digiwave_on) ? 1 : 0;
+    int mode, depth, on;
 
-    if (digiwave_page) {                        /* STEREO group */
+    if (digiwave_page != page)                  /* only the active group runs */
+        return;
+    depth = page ? digiwave_sdepth : digiwave_pdepth;
+    on = (page ? digiwave_son : digiwave_on) ? 1 : 0;
+
+    if (page) {                                 /* STEREO group */
         int b = 2 + ((digiwave_smode * 3) >> 7);
         mode = b > WV_WID ? WV_WID : b;
     } else {                                    /* PITCH group */
@@ -238,7 +241,7 @@ void digiwave_render_out(void)
         /* Each group has its own LFO rate now (PITCH = _speed, STEREO = _sspeed);
          * the active group's feeds the shared phase. 0.1..5.0 Hz (milli-Hz): a
          * slower, musical window than the old 1..12 Hz. */
-        unsigned spd = (unsigned)(digiwave_page ? digiwave_sspeed : digiwave_speed);
+        unsigned spd = (unsigned)(page ? digiwave_sspeed : digiwave_speed);
         unsigned mhz = 100u + (spd * 4900) / 127u;
         unsigned inc = (mhz * WV_K / 1000u) * DN_OUT_FRAMES;    /* per block */
         int mix = bx_wet(digiwave_mix * 258);           /* Q15, capped 0.75 */
@@ -270,8 +273,10 @@ void digiwave_render_out(void)
                 int l = p[0], r = p[1];
                 int wl = wv_read(wv_buf[0], rp, WV_MASK);
                 int wr = wv_read(wv_buf[1], rp, WV_MASK);
-                p[0] = l + bx_mul15(wl - l, wet);
-                p[1] = r + bx_mul15(wr - r, wet);
+                int q[2];
+                bx_mul15x2(wl - l, wr - r, wet, q);   /* L/R MACs back to back */
+                p[0] = l + q[0];
+                p[1] = r + q[1];
                 WV_PUT(0, l);
                 WV_PUT(1, r);
                 wv_w = (wv_w + 1) & WV_MASK;
@@ -429,3 +434,14 @@ void digiwave_render_out(void)
         wv_phase = ph + inc;
     }
 }
+
+/* The WAVE insert is split in two permanent passes so the DELAYS insert sits
+ * between them for good:
+ *
+ *   digiwave_pitch_render_out -> digiwrmz_render_out -> digiwave_stereo_render_out
+ *
+ * Only the group selected by digiwave_page runs; the other pass is a no-op.
+ * digiwave_render_out (both passes) keeps a standalone digiwave build working. */
+void digiwave_pitch_render_out(void)  { wave_group(0); }
+void digiwave_stereo_render_out(void) { wave_group(1); }
+void digiwave_render_out(void)        { wave_group(0); wave_group(1); }

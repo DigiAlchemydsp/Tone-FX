@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.0c — permanent chain order + WASH CPU
+
+Packages: `core-dn1-4.0`, `tonefx-4.0c` (Digitone 1.43) and `tonefx-4.0c-os1.44`
+(Digitone 1.44); `core-4.0`, `tonefx-4.0c-dt` (Digitakt 1.53) and
+`tonefx-4.0c-dt-os1.54` (Digitakt 1.54).
+
+- **Permanent chain order:** ring → EQ → crush → fold → **PITCH → DELAYS →
+  STEREO** → ceiling → meter. The WAVE insert is split into two permanent
+  passes (`digiwave_pitch_render_out` / `digiwave_stereo_render_out`) with the
+  delay between them, so the order no longer depends on the active page. The
+  inactive wave pass is a single branch.
+- **WASH CPU:** while WASH is on it forces the WRMZ to a **static read**
+  (`MOD = 0`) and **skips the DC blocker** (the feedback saturator still bounds
+  it), and the DC state is reset on enter/leave. This removes the two hottest
+  per-frame MACs behind the delay; WASH scoping is handled by the per-engine
+  macro capture/restore.
+- **eMAC:** the L/R wet-mix pairs in WOB and WRMZ/GRAINZ now use `bx_mul15x2`
+  (two MACs back to back on separate accumulators) instead of a serial
+  `mac → movclr → mac → movclr` chain.
+
 ## 4.0b — per-pattern store + macro rework (MIDI-channel / PAGE-jump fix)
 
 Packages: `core-dn1-4.0`, `tonefx-4.0b` (Digitone 1.43) and `tonefx-4.0b-os1.44`
