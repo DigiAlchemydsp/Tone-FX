@@ -1,6 +1,6 @@
 # Tone+FX for the DT1
 
-**Tone+FX 4.0a** by Digital Alchemy DSP, ported from its original FM-groovebox
+**Tone+FX 4.0c** by Digital Alchemy DSP, ported from its original FM-groovebox
 version to the DT1 (OS 1.53 and 1.54). The source is theirs
 ([DigiAlchemydsp/RingTone](https://github.com/DigiAlchemydsp/RingTone); the
 release repo is [DigiAlchemydsp/Tone-FX](https://github.com/DigiAlchemydsp/Tone-FX)),
@@ -12,9 +12,11 @@ Unofficial. Flash at your own risk and keep the official OS file for recovery.
 
 ## What it does
 
-Master effects on every output (main, headphones and USB audio), in this order:
-**ring → TILT (low/high shelf) → CRUSH → FOLD → WAVE (PITCH / STEREO) → WRMZ
-(DELAYS) → output ceiling → meter**. There are **twelve pages** after the stock
+Master effects on every output (main, headphones and USB audio), in this
+permanent order: **ring → TILT (low/high shelf) → CRUSH → FOLD → PITCH → WRMZ
+(DELAYS) → STEREO → output ceiling → meter**. The WAVE insert is split into its
+PITCH and STEREO passes so the delay always sits between them. There are
+**twelve pages** after the stock
 master pages (FUNC+LFO, then LEFT / RIGHT):
 
 | page | knobs | |
@@ -29,7 +31,7 @@ master pages (FUNC+LFO, then LEFT / RIGHT):
 | **PERFORM** | A–H = one depth per engine | static; 16 momentary trig pads |
 | **WASH · RADIO · DESTROY · SPACE** | A on/off · B–H amount | one-slider macros, each driving a bundle of engines |
 
-**Page order (4.0a, two trees).** LEFT / RIGHT cycle the stock master pages
+**Page order (4.0c, two trees).** LEFT / RIGHT cycle the stock master pages
 (Compressor, internal mixer, external mixer) then the FX pages in play order
 **FOLD · CRUSH · RING · STEREO · PITCH · TILT · DELAYS** — only master-FX and
 tonefx pages are in the cycle. **UP** (or **DOWN**) toggles the
@@ -110,7 +112,7 @@ The other controls:
   - None of these numbers is in the DT1's CC tables. They were read from
     the running firmware (tests/digiemu_tonefx.py).
 - **Per-pattern settings.** The settings follow the pattern within a session.
-  - 4.0a has **48 params** (the six FX, the meter, the four macros, the WAVE
+  - 4.0c has **48 params** (the six FX, the meter, the four macros, the WAVE
     dry/wet, and the DELAYS module). They live in a **mod-owned RAM table**
     (`dn_tab[128][48]` in `.bss`, one row per pattern, keyed by `*0x4199dc44`).
     No stock memory is read or written.
@@ -121,8 +123,8 @@ The other controls:
     (`kit + 0x530`, `"DX"` v9). The DT1's saved spare bytes per pattern are taken
     by Digi Matrix, Digi Poly and Digi EQ, and the kit spare is contested too, so
     the packings corrupted one another; the dedicated table removes that.
-- **RAM.** Core 4.0 gives the mods 256 KB (`.run` + `.bss`). Tone+FX 4.0a takes
-  ~73 KB in all (`.run` 22.9 KB, `.bss` 50.0 KB — the per-pattern table is
+- **RAM.** Core 4.0 gives the mods 256 KB (`.run` + `.bss`). Tone+FX 4.0c takes
+  ~74 KB in all (`.run` 23.1 KB, `.bss` 51.2 KB — the per-pattern table is
   ~12 KB, the delay line the rest, and it is s16/halved).
 - **Track-LFO bridge.** It is parked on the original (nothing sets it), and is
   off here.

@@ -42,7 +42,11 @@ elemods + `Tone+FX-4.0c.zip`. Old releases are in `releases/`; superseded ones i
   modes — **WRMZ** (modulated delay) and **GRAINZ** (three granular taps); **D**
   switches mode; per-pattern store (packed, `"DGX4"`); **MIDI CC 80–87**.
 - **Macros:** WASH = WOB only (75% depth / 30% rate) + WRMZ mix/fb; RADIO = EQ
-  tilt (0/127) + TRSH fold + SRR. Capture/restore is per engine.
+  tilt (0/127) + TRSH fold + SRR. Capture/restore is per engine (CRUSH is not
+  tied to WASH).
+- **WASH CPU:** WRMZ `MOD=0` (static read) + the DC blocker skipped while WASH
+  is on (saturator still bounds FB; state reset on enter/leave), and the L/R wet
+  mix uses `bx_mul15x2` in WOB and WRMZ/GRAINZ.
 - **Chain** (permanent): ring → EQ → crush → fold → **PITCH → WRMZ/GRAINZ →
   STEREO** → ceiling → meter. The WAVE insert is split into its PITCH (order 61)
   and STEREO (63) passes with the delay at 62, so the order is fixed.
@@ -141,6 +145,13 @@ Verify each pair with `python -m elekloader.lint <mod> --stock <stock> --with
   [gdeo607/digi1_mods#6](https://github.com/gdeo607/digi1_mods/pull/6).
 - Digitakt port: the 3.5r **UI pass** (full-height sliders, live-value caption,
   meter position) is **not** applied to the DT1.
+- **Next round (in-depth review + optimization):** the WASH delay line still
+  dominates — half-rate WRMZ wet (~−3.5 k cyc/block, darker), mono WOB
+  (~−1.5 k), or a delay-time cap; then 4-accumulator MAC interleaving, eMAC on
+  `fold`/`crush` Q8 and WAVE WIDE, and a fresh `cftiming` pass on 4.0c. Review
+  `dn_store_sync`, the macro capture/restore and the split WAVE passes too.
+- `Screenshots/WASH.png` still shows the old shore band (the page is now the
+  dot cloud).
 - `digihealth-1.1-os1.44.elemod` sits untracked in the repo root (not part of
   Tone+FX).
 
