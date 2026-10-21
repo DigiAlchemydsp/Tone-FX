@@ -17,6 +17,11 @@ The **release repo is release-only**: it ships the built `.elemod`s plus the
 docs. The only source it carries is the **vendored Digitakt port** under
 `DIGITAKT PORT/` (so the cross-platform release is self-contained here).
 
+The **source repo is in sync with 4.0c** (`21edb22`): it now carries the WRMZ
+delay module, the 4.0a eMAC/CPU pass, the 4.0b store (`"DGX4"`) and macros, and
+the 4.0c permanent chain + WASH CPU. Building `mods/tonefx` there is
+**byte-identical** to the published 4.0c Digitone elemods (same SHA-256).
+
 ## 1. What ships
 
 One elemod is the whole suite for one device + OS; none includes a core.
