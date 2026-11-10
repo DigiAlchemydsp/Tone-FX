@@ -1,19 +1,19 @@
 {
  "elemod": 2,
  "id": "tonefx",
- "version": "4.0c",
+ "version": "4.1a",
  "title": "Tone+FX",
- "description": "Tone+FX 3.2a by Digital Alchemy DSP (github.com/DigiAlchemydsp/RingTone), ported from its original FM-groovebox version: a master effect suite on every output: main, headphones and USB. Master ring modulator, a low-shelf/high-shelf master EQ (TILT), a Crunch/Redux lo-fi stage (BITS / SR / CRUNCH), a wavefolder with a continuous CLEAN/MUD/DIST/TRSH fold type, a five-mode modulation insert (PITCH: WOB / SHFT, STEREO: FLAN / PAN / WIDE), an output meter and a soft output ceiling. Seven pages after the stock master pages (FUNC+LFO; LEFT/RIGHT rotate the pages): DIGI RING, FOLD, TILT, CRUSH, PITCH, STEREO and PERFORM. PERFORM is reached with UP from any of the six: the eight knobs set one depth per FX block, and the 16 trigs are momentary performance pads (four blocks of four intensities: ring / fold+crush / pitch / pan) that ramp their block up while held and back on release. Settings follow the pattern while the unit is on (they are not saved over a power cycle on the DT1), and the FX answer incoming MIDI CC. The unit starts with its own intro (no boot splash).",
+ "description": "Tone+FX 4.1a by Digital Alchemy DSP (github.com/DigiAlchemydsp/RingTone), ported from its original FM-groovebox version: a master effect suite on every output: main, headphones and USB. Master ring modulator, a low-shelf/high-shelf master EQ (TILT), a Crunch/Redux lo-fi stage (BITS / SR / CRUNCH), a wavefolder with a continuous CLEAN/MUD/DIST/TRSH fold type, a five-mode modulation insert (PITCH: WOB / SHFT, STEREO: FLAN / PAN / WIDE), an output meter and a soft output ceiling. Seven pages after the stock master pages (FUNC+LFO; LEFT/RIGHT rotate the pages): DIGI RING, FOLD, TILT, CRUSH, PITCH, STEREO and PERFORM. PERFORM is reached with UP from any of the six: the eight knobs set one depth per FX block, and the 16 trigs are momentary performance pads (four blocks of four intensities: ring / fold+crush / pitch / pan) that ramp their block up while held and back on release. Settings follow the pattern while the unit is on (they are not saved over a power cycle on the DT1), and the FX answer incoming MIDI CC. The unit starts with its own intro (no boot splash).",
  "category": "Sound",
  "author": "Digital Alchemy DSP (DT1 port: gdeo607)",
  "license": "GPL-2.0-or-later",
  "target": {
   "device": "digitakt-mk1",
   "product": "Digitakt mk1",
-  "os": "1.54",
-  "syx_sha256": "f78ba80fa7b1da5fb0e1ff61ad61e9e71aafe79f4364fc49679f3651353e3cf6",
-  "section3_sha256": "5c58bf9e3949ef09977c5fc007a61e8d026931f67f1621238379dfb8ee4d31a2",
-  "section3_len": 2479680
+  "os": "1.53",
+  "syx_sha256": "9bdd44bb6102fb25c143cfab97bc92b7a89c463f795d3112dce89771e29bcc92",
+  "section3_sha256": "4b47a9507758ca5669ca02ab2c0374d2c04c98aece445408295cc1dcb265c5df",
+  "section3_len": 2475584
  },
  "sections": {
   ".run": {
@@ -36,7 +36,7 @@
     ],
     [
      "hex",
-     "283c8000ea704e754ab94197c77c671c206f00047000102800022f007000102800012f004eb900000000508f"
+     "283c8000ea704e754ab94197b77c671c206f00047000102800022f007000102800012f004eb900000000508f"
     ],
     [
      "stock",
@@ -45,7 +45,7 @@
     ],
     [
      "hex",
-     "4ef9400d4cc02f082f2f00084eb900000000588f205f4ef940030930"
+     "4ef9400d4a982f082f2f00084eb900000000588f205f4ef940030930"
     ],
     [
      "stock",
@@ -64,7 +64,7 @@
     ],
     [
      "hex",
-     "050c508f22522f0a2269004c41eefff04e91486efff0"
+     "02e4508f22522f0a2269004c41eefff04e91486efff0"
     ],
     [
      "stock",
@@ -73,7 +73,7 @@
     ],
     [
      "hex",
-     "3a56486efff0"
+     "3a12486efff0"
     ],
     [
      "stock",
@@ -109,7 +109,7 @@
     ],
     [
      "stock",
-     "0x40124ce0",
+     "0x40124ab8",
      8
     ],
     [
@@ -118,7 +118,7 @@
     ],
     [
      "stock",
-     "0x40121700",
+     "0x401214d8",
      8
     ],
     [
@@ -136,7 +136,7 @@
     ],
     [
      "stock",
-     "0x40121700",
+     "0x401214d8",
      8
     ],
     [
@@ -163,7 +163,7 @@
     ],
     [
      "stock",
-     "0x400e0064",
+     "0x400dfe3c",
      8
     ],
     [
@@ -208,7 +208,7 @@
     ],
     [
      "stock",
-     "0x40132c7c",
+     "0x40132a54",
      8
     ],
     [
@@ -217,7 +217,7 @@
     ],
     [
      "stock",
-     "0x400d1760",
+     "0x400d1538",
      8
     ],
     [
@@ -244,7 +244,7 @@
     ],
     [
      "stock",
-     "0x40121700",
+     "0x401214d8",
      8
     ],
     [
@@ -253,7 +253,7 @@
     ],
     [
      "stock",
-     "0x400d1196",
+     "0x400d0f6e",
      8
     ],
     [
@@ -298,7 +298,7 @@
     ],
     [
      "stock",
-     "0x400a3ad2",
+     "0x400a3976",
      8
     ],
     [
@@ -307,7 +307,7 @@
     ],
     [
      "stock",
-     "0x400a3386",
+     "0x400a322a",
      10
     ],
     [
@@ -316,7 +316,7 @@
     ],
     [
      "stock",
-     "0x40106552",
+     "0x4010632a",
      8
     ],
     [
@@ -361,7 +361,7 @@
     ],
     [
      "stock",
-     "0x400cc3f4",
+     "0x400cc1cc",
      10
     ],
     [
@@ -375,7 +375,7 @@
     ],
     [
      "hex",
-     "4a886716203c401848dcb090660c4a280030"
+     "4a886716203c401845dcb090660c4a280030"
     ],
     [
      "stock",
@@ -402,7 +402,7 @@
     ],
     [
      "stock",
-     "0x400cdfd6",
+     "0x400cddae",
      8
     ],
     [
@@ -417,7 +417,7 @@
     ],
     [
      "hex",
-     "1218671a7381227c40200ed0242f000c73b1180052814c021800d08160e2"
+     "1218671a7381227c40200b20242f000c73b1180052814c021800d08160e2"
     ],
     [
      "stock",
@@ -444,7 +444,7 @@
     ],
     [
      "stock",
-     "0x40091f8c",
+     "0x40091f48",
      10
     ],
     [
@@ -467,25 +467,25 @@
     ],
     [
      "stock",
-     "0x400bdf76",
+     "0x400bdd4e",
      8
     ],
     [
      "hex",
-     "e2802f002f3c40200ebc"
+     "e2802f002f3c40200b0c"
     ],
     [
      "stock",
-     "0x400b05b2",
+     "0x400b038a",
      8
     ],
     [
      "hex",
-     "27a4"
+     "257c"
     ],
     [
      "stock",
-     "0x401010ee",
+     "0x40100ec6",
      8
     ],
     [
@@ -494,7 +494,7 @@
     ],
     [
      "stock",
-     "0x40105b50",
+     "0x40105928",
      10
     ],
     [
@@ -503,7 +503,7 @@
     ],
     [
      "stock",
-     "0x4012a6dc",
+     "0x4012a4b4",
      8
     ],
     [
@@ -526,7 +526,7 @@
     ],
     [
      "stock",
-     "0x400bdf76",
+     "0x400bdd4e",
      8
     ],
     [
@@ -540,11 +540,11 @@
     ],
     [
      "hex",
-     "27a44fef001c7063b0826d0c7209b2826c0a103c000660067009600270032f02487900000000"
+     "257c4fef001c7063b0826d0c7209b2826c0a103c000660067009600270032f02487900000000"
     ],
     [
      "stock",
-     "0x400a93a8",
+     "0x400a9180",
      8
     ],
     [
@@ -558,11 +558,11 @@
     ],
     [
      "hex",
-     "27a44cef001c"
+     "257c4cef001c"
     ],
     [
      "stock",
-     "0x400c4cf6",
+     "0x400c4ace",
      8
     ],
     [
@@ -616,16 +616,16 @@
     ],
     [
      "stock",
-     "0x400c06aa",
+     "0x400c0482",
      12
     ],
     [
      "hex",
-     "71af003f207c40200ed095ca387c0001262f0034242f00402e02448799c27bb00800207c40200fd071f00a002c4020025380ddfc402011d02f40002cba8a6f3a7db6a800266f003842842a6f002cdbc309066716487800014874b8002f0d2f0b2f034ebafd784fef00145284d7c77008b08466dc528ad682"
+     "71af003f207c40200b2095ca387c0001262f0034242f00402e02448799c27bb00800207c40200c2071f00a002c4020025380ddfc40200e202f40002cba8a6f3a7db6a800266f003842842a6f002cdbc309066716487800014874b8002f0d2f0b2f034ebafd784fef00145284d7c77008b08466dc528ad682"
     ],
     [
      "stock",
-     "0x400c080a",
+     "0x400c05e2",
      14
     ],
     [
@@ -640,11 +640,11 @@
     ],
     [
      "hex",
-     "47faff5e1012672871802f032f002f2f00202f024e93719a4fef0010207c40200ed071b0"
+     "47faff5e1012672871802f032f002f2f00202f024e93719a4fef0010207c40200b2071b0"
     ],
     [
      "stock",
-     "0x4009afb2",
+     "0x4009aeda",
      8
     ],
     [
@@ -712,7 +712,7 @@
     ],
     [
      "stock",
-     "0x400d940c",
+     "0x400d91e4",
      12
     ],
     [
@@ -748,7 +748,7 @@
     ],
     [
      "stock",
-     "0x40140cf2",
+     "0x40140aca",
      8
     ],
     [
@@ -766,7 +766,7 @@
     ],
     [
      "stock",
-     "0x40140cf2",
+     "0x40140aca",
      8
     ],
     [
@@ -793,7 +793,7 @@
     ],
     [
      "stock",
-     "0x40100f36",
+     "0x40100d0e",
      8
     ],
     [
@@ -802,7 +802,7 @@
     ],
     [
      "stock",
-     "0x400a52b0",
+     "0x400a5154",
      8
     ],
     [
@@ -811,7 +811,7 @@
     ],
     [
      "stock",
-     "0x400c45a0",
+     "0x400c4378",
      8
     ],
     [
@@ -825,7 +825,7 @@
     ],
     [
      "stock",
-     "0x401320da",
+     "0x40131eb2",
      10
     ],
     [
@@ -839,12 +839,12 @@
     ],
     [
      "stock",
-     "0x400b05b2",
+     "0x400b038a",
      8
     ],
     [
      "hex",
-     "19b2202f002c4fef0018"
+     "178a202f002c4fef0018"
     ],
     [
      "stock",
@@ -890,11 +890,11 @@
     ],
     [
      "hex",
-     "247c400c27a447faf8e44e93588f20006a0252802e82487900000000"
+     "247c400c257c47faf8e44e93588f20006a0252802e82487900000000"
     ],
     [
      "stock",
-     "0x400a93a8",
+     "0x400a9180",
      8
     ],
     [
@@ -989,12 +989,12 @@
     ],
     [
      "stock",
-     "0x40121700",
+     "0x401214d8",
      8
     ],
     [
      "stock",
-     "0x400a8374",
+     "0x400a814c",
      10
     ],
     [
@@ -1012,12 +1012,12 @@
     ],
     [
      "stock",
-     "0x40120e74",
+     "0x40120c4c",
      8
     ],
     [
      "hex",
-     "4ebaf024588f4a806d2041f90000000041f00c0023d04197df8841f90000000041f00c0023d04197df8c"
+     "4ebaf024588f4a806d2041f90000000041f00c0023d04197cf8841f90000000041f00c0023d04197cf8c"
     ],
     [
      "stock",
@@ -1039,7 +1039,7 @@
     ],
     [
      "stock",
-     "0x400edfd2",
+     "0x400eddaa",
      8
     ],
     [
@@ -1057,7 +1057,7 @@
     ],
     [
      "stock",
-     "0x400d55f6",
+     "0x400d53ce",
      8
     ],
     [
@@ -1075,21 +1075,21 @@
     ],
     [
      "stock",
-     "0x400a48bc",
+     "0x400a4760",
      8
     ],
     [
      "hex",
-     "4e924fef001c2039000000006c025e80e6805280d0b900000000718023c0000000004ab9000000006708203900000000600242802f00487800602f0245faf3544e922f3900000000487800762f024e9245faee5e2f3900000000487900000000"
+     "4e924fef001c2039000000006c025e80e6805280d0b900000000718023c0000000004ab9000000006708203900000000600242802f00487800602f0245faf3544e922f3900000000487800762f024e9245faee5e2f390000000048790000000048780060"
     ],
     [
      "stock",
-     "0x400a6b44",
+     "0x40069cb2",
      8
     ],
     [
      "hex",
-     "4fef00242eb900000000487900000000487800762f024e924879000000002f024ebaed984fef001820390000000060000d6e7001b08366000156203900000000"
+     "2eb900000000487900000000487800762f024e924879000000002f024ebaed984fef001820390000000060000d6e7001b08366000156203900000000"
     ],
     [
      "stock",
@@ -1111,7 +1111,7 @@
     ],
     [
      "stock",
-     "0x400ae760",
+     "0x400ae538",
      8
     ],
     [
@@ -1138,7 +1138,7 @@
     ],
     [
      "stock",
-     "0x400ae760",
+     "0x400ae538",
      8
     ],
     [
@@ -1152,7 +1152,7 @@
     ],
     [
      "hex",
-     "002845faeda42a39000000002239000000004ab900000000677e0685ffffffc07c037e174c465805200506800000001ebe846c501c3c002fbc846d14721892844c0518001e3c00184c471801d0816034704fb0846c3620017a030680ffffffc04c4508007c67bc846d1422040681ffffffb04c0018007e184c471801200106800000001e7207b2806c126002701e7a32ba806c0a70326006701e600270082f007c7a2f044e925484508fbc846600ff582f3900000000487900000000247c400c27a4"
+     "002845faeda42a39000000002239000000004ab900000000677e0685ffffffc07c037e174c465805200506800000001ebe846c501c3c002fbc846d14721892844c0518001e3c00184c471801d0816034704fb0846c3620017a030680ffffffc04c4508007c67bc846d1422040681ffffffb04c0018007e184c471801200106800000001e7207b2806c126002701e7a32ba806c0a70326006701e600270082f007c7a2f044e925484508fbc846600ff582f3900000000487900000000247c400c257c"
     ],
     [
      "stock",
@@ -1296,7 +1296,7 @@
     ],
     [
      "stock",
-     "0x400a0a6c",
+     "0x400a0910",
      8
     ],
     [
@@ -1359,12 +1359,12 @@
     ],
     [
      "stock",
-     "0x40120ed4",
+     "0x40120cac",
      8
     ],
     [
      "stock",
-     "0x4009a716",
+     "0x4009a63e",
      8
     ],
     [
@@ -1387,7 +1387,7 @@
     ],
     [
      "hex",
-     "27a44fef002c200472065680b2806406123c00426002720470037af6c084205b52842f102f1a4879000000004878ffff4c0508002040486800222f012f3c"
+     "257c4fef002c200472065680b2806406123c00426002720470037af6c084205b52842f102f1a4879000000004878ffff4c0508002040486800222f012f3c"
     ],
     [
      "stock",
@@ -1396,7 +1396,7 @@
     ],
     [
      "hex",
-     "27a44fef00207008b08466b2600005be7207b283660000924ab90000000067082839000000006002428442a748780034ea84"
+     "257c4fef00207008b08466b2600005be7207b283660000924ab90000000067082839000000006002428442a748780034ea84"
     ],
     [
      "stock",
@@ -1504,7 +1504,7 @@
     ],
     [
      "hex",
-     "27a44fef001c4879000000002f024ebae090203900000000508f60684ab90000000067644878000174744879000000004ebadffe508f42a7487800259480244024026a025282e28247f2280b2f0b487800332f024ebae004"
+     "257c4fef001c4879000000002f024ebae090203900000000508f60684ab90000000067644878000174744879000000004ebadffe508f42a7487800259480244024026a025282e28247f2280b2f0b487800332f024ebae004"
     ],
     [
      "stock",
@@ -1567,7 +1567,7 @@
     ],
     [
      "hex",
-     "2f0a2f0224394199ec440682be6e0fe80c8200048eff6212223c0000091e4c4120004c4120024a80670274ff203900000000b08267624a806d104ab90000000067082f004ebadbfc588f23c2000000006d3e41f9000000004a302800672a2002eb88ef8a41f900000000948006820000000042802442737208002258548022817260b28066ee60082f024ebadbb6588f42b900000000601a4a826d164ab900000000670e2f024ebadb9a42b900000000588f2039000000006708538023c0000000002039000000002439000000004a80660842b900000000603a4a806f362f024ebadd4e588f4a80672a203900000000528023c000000000b0b9000000006d2a2f42000c241f42b900000000"
+     "2f0a2f0224394199dc440682be6e1fe80c8200048eff6212223c0000091e4c4120004c4120024a80670274ff203900000000b08267624a806d104ab90000000067082f004ebadbfc588f23c2000000006d3e41f9000000004a302800672a2002eb88ef8a41f900000000948006820000000042802442737208002258548022817260b28066ee60082f024ebadbb6588f42b900000000601a4a826d164ab900000000670e2f024ebadb9a42b900000000588f2039000000006708538023c0000000002039000000002439000000004a80660842b900000000603a4a806f362f024ebadd4e588f4a80672a203900000000528023c000000000b0b9000000006d2a2f42000c241f42b900000000"
     ],
     [
      "stock",
@@ -1721,7 +1721,7 @@
     ],
     [
      "stock",
-     "0x40122982",
+     "0x4012275a",
      8
     ],
     [
@@ -1739,7 +1739,7 @@
     ],
     [
      "stock",
-     "0x4009705a",
+     "0x40097016",
      8
     ],
     [
@@ -1799,7 +1799,7 @@
     ],
     [
      "stock",
-     "0x4009705a",
+     "0x40097016",
      8
     ],
     [
@@ -1850,7 +1850,7 @@
     ],
     [
      "stock",
-     "0x40092382",
+     "0x4009233e",
      14
     ],
     [
@@ -1859,7 +1859,7 @@
     ],
     [
      "stock",
-     "0x400a83e4",
+     "0x400a81bc",
      8
     ],
     [
@@ -1877,7 +1877,7 @@
     ],
     [
      "stock",
-     "0x400a3386",
+     "0x400a322a",
      8
     ],
     [
@@ -1886,17 +1886,17 @@
     ],
     [
      "stock",
-     "0x400a3386",
+     "0x400a322a",
      10
     ],
     [
      "stock",
-     "0x40191390",
+     "0x40191090",
      10
     ],
     [
      "stock",
-     "0x4020edb0",
+     "0x4020ea00",
      8
     ],
     [
@@ -1905,7 +1905,7 @@
     ],
     [
      "stock",
-     "0x4020edae",
+     "0x4020e9fe",
      10
     ],
     [
@@ -1914,7 +1914,7 @@
     ],
     [
      "stock",
-     "0x4020edae",
+     "0x4020e9fe",
      10
     ],
     [
@@ -1923,12 +1923,12 @@
     ],
     [
      "stock",
-     "0x4018f548",
+     "0x4018f248",
      10
     ],
     [
      "stock",
-     "0x4020edb0",
+     "0x4020ea00",
      8
     ],
     [
@@ -1937,12 +1937,12 @@
     ],
     [
      "stock",
-     "0x4020ee42",
+     "0x4020ea92",
      10
     ],
     [
      "stock",
-     "0x401aa9fa",
+     "0x401aa6fa",
      8
     ],
     [
@@ -1951,22 +1951,22 @@
     ],
     [
      "stock",
-     "0x401822c8",
+     "0x40181fc8",
      8
     ],
     [
      "stock",
-     "0x401822c0",
+     "0x40181fc0",
      10
     ],
     [
      "stock",
-     "0x4020edb0",
+     "0x4020ea00",
      8
     ],
     [
      "stock",
-     "0x4020edb0",
+     "0x4020ea00",
      8
     ],
     [
@@ -1975,32 +1975,32 @@
     ],
     [
      "stock",
-     "0x40183080",
+     "0x40182d80",
      8
     ],
     [
      "stock",
-     "0x4017d28c",
+     "0x4017cf8c",
      18
     ],
     [
      "stock",
-     "0x4018e16e",
+     "0x4018de6e",
      8
     ],
     [
      "stock",
-     "0x401ff6ee",
+     "0x401ff33e",
      8
     ],
     [
      "stock",
-     "0x4020ee64",
+     "0x4020eab4",
      8
     ],
     [
      "stock",
-     "0x401aa652",
+     "0x401aa352",
      8
     ],
     [
@@ -2009,7 +2009,7 @@
     ],
     [
      "stock",
-     "0x401ad5c4",
+     "0x401ad2c4",
      8
     ],
     [
@@ -2018,7 +2018,7 @@
     ],
     [
      "stock",
-     "0x401fd60e",
+     "0x401fd25e",
      70
     ],
     [
@@ -2033,10 +2033,6 @@
   }
  },
  "symbols": {
-  "OS154": [
-   "abs",
-   1
-  ],
   "dm_off": [
    ".bss",
    16
@@ -9713,7 +9709,7 @@
    ]
   },
   {
-   "addr": "0x401848ec",
+   "addr": "0x401845ec",
    "len": 4,
    "stock_sha256": "2919ff352e398401a46faaacefab754336620f70e967613b208ccc94f0e08985",
    "new": "00000000",
@@ -9728,7 +9724,7 @@
    ]
   },
   {
-   "addr": "0x40184928",
+   "addr": "0x40184628",
    "len": 4,
    "stock_sha256": "4138926d6f0e852526fb5fdef5e8fe79e8b0b9e3d17faa2977cc8a8f04a50190",
    "new": "00000000",
@@ -9743,7 +9739,7 @@
    ]
   },
   {
-   "addr": "0x400d4cb8",
+   "addr": "0x400d4a90",
    "len": 8,
    "stock_sha256": "14607b32e7a5a2eae6fcb2e63e1770b2f2387c64c63e6289faf0eb8e75f9aa40",
    "new": "4ef9000000004e71",

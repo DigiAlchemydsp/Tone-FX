@@ -1,9 +1,9 @@
 {
  "elemod": 2,
  "id": "tonefx",
- "version": "4.0c",
+ "version": "4.1a",
  "title": "Tone+FX",
- "description": "Tone+FX 4.0: the Tone+FX suite plus ONE dedicated delay line appended at the end of the chain that serves two modes (like digiwave's modes on its own line): WRMZ (a modulated delay) and GRAINZ (a grain-ish cloud of three drifting taps on the same line - no history ring, no head pool). Edited on one DELAYS page (kind 11, the D encoder switches the mode). Params are kept per pattern in one reserved MIDI track (channel 16), packed into its pattern block, and respond to MIDI CC 80-87. The suite's output ceiling and meter run last. The delay line is mono (widen externally) and true-bypasses when off. It REQUIRES the core (core-dn1 4.0) and does not include it.",
+ "description": "Tone+FX 4.1a: the Tone+FX suite plus ONE dedicated delay line appended at the end of the chain that serves two modes (like digiwave's modes on its own line): WRMZ (a modulated delay) and GRAINZ (a grain-ish cloud of three drifting taps on the same line - no history ring, no head pool). Edited on one DELAYS page (kind 11, the D encoder switches the mode). Params are kept per pattern in one reserved MIDI track (channel 16), packed into its pattern block, and respond to MIDI CC 80-87. The suite's output ceiling and meter run last. The delay line is mono (widen externally) and true-bypasses when off. It REQUIRES the core (core-dn1 4.1) and does not include it.",
  "category": "Sound",
  "author": "Digital Alchemy DSP",
  "license": "GPL-2.0-or-later",

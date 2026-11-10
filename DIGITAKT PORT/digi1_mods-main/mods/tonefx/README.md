@@ -123,7 +123,7 @@ The other controls:
     (`kit + 0x530`, `"DX"` v9). The DT1's saved spare bytes per pattern are taken
     by Digi Matrix, Digi Poly and Digi EQ, and the kit spare is contested too, so
     the packings corrupted one another; the dedicated table removes that.
-- **RAM.** Core 4.0 gives the mods 256 KB (`.run` + `.bss`). Tone+FX 4.0c takes
+- **RAM.** Core 4.0 gives the mods 256 KB (`.run` + `.bss`). Tone+FX 4.1a takes
   ~74 KB in all (`.run` 23.1 KB, `.bss` 51.2 KB — the per-pattern table is
   ~12 KB, the delay line the rest, and it is s16/halved).
 - **Track-LFO bridge.** It is parked on the original (nothing sets it), and is
@@ -147,10 +147,10 @@ One source builds for **both** OS versions; the stock file picks the release
 (the `ports` entry in `mod.json`). `--version` must be exactly 4 ASCII chars.
 
 ```sh
-# OS 1.53 -> out/tonefx-3.5r.elemod
+# OS 1.53 -> out/tonefx-4.1a.elemod
 python -m elekloader.sdk.build mods/tonefx --stock Digitakt_OS1.53.syx
 
-# OS 1.54 -> out/tonefx-3.5r-os1.54.elemod
+# OS 1.54 -> out/tonefx-4.1a-os1.54.elemod
 python -m elekloader.sdk.build mods/tonefx --stock Digitakt_OS1.54.syx   # or the official .zip
 ```
 
@@ -183,8 +183,8 @@ Tone+FX ships from **two source trees** and covers **four stock OS files**:
 
 | device | OS | source tree | build with | core |
 |---|---|---|---|---|
-| Digitone mk1 / Keys | **1.43** | `digitone_corea` | `mods/tonefx` (top level) | `core-dn1-4.0.elemod` |
-| Digitone mk1 / Keys | **1.44** | `digitone_corea` | `mods/tonefx` (`ports.1.44`) | `core-dn1-4.0-os1.44.elemod` |
+| Digitone mk1 / Keys | **1.43** | `digitone_corea` | `mods/tonefx` (top level) | `core-dn1-4.1.elemod` |
+| Digitone mk1 / Keys | **1.44** | `digitone_corea` | `mods/tonefx` (`ports.1.44`) | `core-dn1-4.1-os1.44.elemod` |
 | Digitakt mk1 | **1.53** | this repo (`digi1_mods`) | `mods/tonefx` | `core-4.0.elemod` |
 | Digitakt mk1 | **1.54** | this repo (`digi1_mods`) | `mods/tonefx` (`ports.1.54`) | `core-4.0-os1.54.elemod` |
 
@@ -240,9 +240,9 @@ tests (`tests/digiemu_tonefx.py`, `tests/emu_tonefx.py` here; the Digitone's
 
 - `tonefx-<v>.elemod` and `tonefx-<v>-os<OS>.elemod`, one pair per device; the
   `.elemod` is named `<id>-<version>[-os<OS>].elemod` by the SDK.
-- Ship each device's **core** beside it (`core-dn1-4.0[-os1.44].elemod` for the
+- Ship each device's **core** beside it (`core-dn1-4.1[-os1.44].elemod` for the
   Digitone, `core-4.0[-os1.54].elemod` for the DT1).
-- `--version` must be exactly 4 ASCII characters (e.g. `3.5r`).
+- `--version` must be exactly 4 ASCII characters (e.g. `4.1a`).
 - `elemods/README.md` names the versions and licences; `CHANGELOG.md` records
   what changed; `COMPATIBILITY.txt` says which pairs combine.
 

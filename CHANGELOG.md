@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.1a — core-dn1 4.1
+
+Packages: `core-dn1-4.1`, `tonefx-4.1a` (Digitone 1.43) and `tonefx-4.1a-os1.44`
+(Digitone 1.44); `core-4.0`, `tonefx-4.1a-dt` (Digitakt 1.53) and
+`tonefx-4.1a-dt-os1.54` (Digitakt 1.54).
+
+- **Moved to elekloader core-dn1 4.1** for both Digitone files. 4.1 adds the
+  `ev_note_queue` event (each queued note event with the time it plays); Tone+FX
+  does not subscribe to it, so there is no functional change, but the files now
+  link as `core 4.1 > tonefx 4.1a` and patch byte-exact against stock 1.43 and
+  1.44. They remain compatible with core-dn1 4.0 (the mod asks for `4.0`).
+- **Digitakt files are unchanged in behaviour**: they still link as `core 4.0 >
+  tonefx 4.1a` (the latest Digitakt core line is still 4.0).
+- No audio/UI change versus 4.0c; `.run`/`.bss` footprints and the permanent
+  PITCH → DELAYS → STEREO chain are identical.
+
 ## 4.0c — permanent chain order + WASH CPU
 
 Packages: `core-dn1-4.0`, `tonefx-4.0c` (Digitone 1.43) and `tonefx-4.0c-os1.44`
