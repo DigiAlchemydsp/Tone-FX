@@ -17,7 +17,7 @@ The **release repo is release-only**: it ships the built `.elemod`s plus the
 docs. The only source it carries is the **vendored Digitakt port** under
 `DIGITAKT PORT/` (so the cross-platform release is self-contained here).
 
-The **source repo** (`digitone_corea/`, synced at `21edb22` for the 4.0c DSP)
+The **source repo** (`digitone_corea/`, 4.0c DSP at `21edb22`, 4.1a bump at `28298f8`)
 carries the WRMZ delay module, the 4.0a eMAC/CPU pass, the 4.0b store
 (`"DGX4"`) and macros, and the 4.0c permanent chain + WASH CPU. 4.1a bumps only
 the mod version/description and builds against **core-dn1 4.1**; the DSP is
