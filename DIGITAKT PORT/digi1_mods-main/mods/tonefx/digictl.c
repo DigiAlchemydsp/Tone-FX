@@ -3,7 +3,7 @@
  * Digital Alchemy DSP's, for the original FM groovebox (and its Keys model), OS 1.43; ported to
  * the DT1 (OS 1.53 / 1.54) through corea.h.
  *
- * Seven pages of our own, appended to the master page tree (view kinds 0..6),
+ * Nine pages of our own, appended to the master page tree (view kinds 0..8),
  * rotated with LEFT / RIGHT (or the on-screen < > arrows):
  *
  *   RING  kind 0  E = depth, F = frequency; a centred ring animation, the
@@ -12,7 +12,7 @@
  *                 E/F/G/H = amount; the spiral on the left, the big mode title
  *                 centred, the amount as a vertical slider next to the meter
  *   TILT  kind 2  A = on/off, E = low shelf, H = high shelf; a bent response
- *   CRUSH kind 3  A = on/off, D = mode (BITS/SR/CRUNCH), E = amount, F = tune
+ *   CRUSH kind 3  A = on/off, D = mode (REDUX/CRUNCH), E = amount, F = tune
  *   PITCH kind 4  A = on/off, D = mode (WOB/SHFT), E = speed, F = depth
  *   STEREO kind 5 A = on/off, D = mode (FLAN/PAN/WIDE), E = speed, F = depth,
  *                 G = mix, H = feedback
@@ -20,7 +20,7 @@
  *                 engine on the encoders (A ring depth, B fold amount, C crush
  *                 amount, D wave pitch depth, E wave stereo depth, F EQ low,
  *                 G EQ high, H wave speed). Reached by pressing UP on any of the
- *                 six pages; UP again returns. The 16 trigs are momentary
+ *                 seven pages; UP again returns. The 16 trigs are momentary
  *                 performance pads, now one block per engine (1 2 9 10 ring,
  *                 3 4 fold, 11 12 crush, 5 6 13 14 pitch, 7 8 15 16 stereo):
  *                 a held trig ramps its engine's depth up (and turns it on),
@@ -28,6 +28,8 @@
  *                 pattern value on release. The store is never dirtied by the
  *                 pads, so the pattern value is the floor. The WAVE engine has
  *                 its own PITCH and STEREO depths, so the two pads never fight.
+ *   STUTTER kind 8 sits beside PERFORM in the same tree: the trigs freeze and
+ *                 loop the finished master mix at tempo subdivisions.
  *
  * The stock top status bar (rows 53..63) is left untouched; our drawing stays
  * below it. None of the stock pages are taken: the pages are reached by FUNC+LFO
@@ -41,7 +43,7 @@
  * The DT1's master pages (FUNC+LFO) are the same view class: vtable 0x401845dc, kinds at +124/+128,
  * index +144, stock kinds {11 COMP, 12 internal mixer, 13 external mixer}. Its kinds 1..10 are real
  * parameter pages (TRIG, SRC, ...) that the stock draw, keys and knobs would act on, and only kind 0
- * ("None") has no knobs, so the seven pages are seven kind-0 entries inserted after the stock pages, told
+ * ("None") has no knobs, so the nine pages are nine kind-0 entries inserted after the stock pages, told
  * apart by their place in the vector (dc_page). Before the stock draw of one of them, kind 0's names (the
  * layout table 0x4197cf88) are set to that page's. Key ids are the DT1's (UP 14, LEFT 16, RIGHT 17,
  * trigs 24..39, FUNC held = flags bit 1); everything else - the effects, the pages, the PERFORM pads, the
@@ -57,11 +59,11 @@
 #define F_400c9812 0x400c9a3a
 #define F_400d4180 0x400d43a8
 #define F_401845dc 0x401848dc
+#define F_4191e018 0x4191f018
 #define F_40200b0c 0x40200ebc
 #define F_40200b20 0x40200ed0
 #define F_40200c20 0x40200fd0
 #define F_40200e20 0x402011d0
-#define F_4191e018 0x4191f018
 #define F_4197cf88 0x4197df88
 #define F_4199dc44 0x4199ec44
 #else
@@ -84,6 +86,7 @@
 
 #include "corea.h"
 #include "sin256.h"
+#include "../digitojam/toejam.h"
 
 /* fillRect / frameRect: (bmp, x0, y0, x1, y1, colour), y = 0 the BOTTOM row; colour 0 clear, 1 set,
  * -1 invert (the DT1's; on the original they were in corea.h) */
@@ -104,13 +107,11 @@
 #define DN_WVKIND     4            /* WAVE pitch page: WOB / SHFT */
 #define DN_WSKIND     5            /* WAVE stereo page: FLAN / PAN / WIDE */
 #define DN_PFKIND     6            /* PERF page: static depths + momentary trigs */
-#define DN_WASHKIND   7            /* macro pages: one slider + a per-page graphic */
-#define DN_RADKIND    8
-#define DN_DESKIND    9
-#define DN_SPCKIND   10
-#define DN_DLYKIND   11            /* DELAYS: WRMZ / GRAINZ, one page, D switches */
-#define DN_NPAGES    12
-#define DN_TREE1_N   7             /* FX pages in the main scroll (tree 1) */
+#define DN_DLYKIND    7            /* DELAYS: WRMZ */
+#define DN_STUKIND    8            /* STUTTER: momentary master-buffer pads */
+#define DN_NPAGES     9
+#define DN_TREE1_N    7            /* FX pages in the main scroll (tree 1) */
+#define DN_TREE2_N    2            /* PERFORM + STUTTER */
 #define DN_K_UP       14           /* the UP key id (DT1) */
 #define DN_K_DOWN     15           /* the DOWN key id (DT1) */
 #define DN_K_LEFT     16
@@ -142,20 +143,8 @@ extern int digiwave_on, digiwave_son, digiwave_pmode, digiwave_smode, digiwave_p
 extern int digiwave_speed, digiwave_pdepth, digiwave_sdepth;
 extern int digiwave_mix, digiwave_fb, digiwave_pmix;
 extern int digiwrmz_on, digiwrmz_time, digiwrmz_fb, digiwrmz_tone;
-extern int digiwrmz_mod, digiwrmz_rate, digiwrmz_mix, digiwrmz_mode;
-extern int digigrainz_on, digigrainz_dens, digigrainz_size, digigrainz_pitch;
-extern int digigrainz_spray, digigrainz_fb, digigrainz_mix;
+extern int digiwrmz_mod, digiwrmz_rate, digiwrmz_mix;
 
-/* MACRO page state (owned here, stored per pattern). WASH = reverb send +
- * a WAVE wobble: while it is on, it drives the WAVE engine into WOB and turns
- * the depth up with the macro amount (the WAVE pages' settings are saved and
- * restored around it). Reverb is a stock write, wired when its address lands. */
-int digiwash_on = 0;
-int digiwash_amount = 64;
-/* RADIO / DESTROY / SPACE macro state (test build: .bss, not in the store yet) */
-int dgmac2_on = 0, dgmac2_amount = 64;   /* RADIO   */
-int dgmac3_on = 0, dgmac3_amount = 64;   /* DESTROY */
-int dgmac4_on = 0, dgmac4_amount = 64;   /* SPACE   */
 
 /* Track-LFO bridge. A track LFO can target the track's FLTR FREQ; that live
  * value is in the per-voice record at 0x80003544 + (voice-1)*0x9E, FREQ at +0
@@ -170,21 +159,36 @@ int digimod_voice = 1;               /* 1..8 */
  * digimod_dest). The two params are still kept in the store, as on the original. */
 
 /* ---- per-pattern storage -----------------------------------------------------
- * Our FX params have no stock field, so they are kept per pattern in a table of
- * our own, keyed by the pattern index the current kit object belongs to
- * (*0x4199dc44). This replaces the old trick of packing them into the kit's RAM
- * spare bytes (kit + 0x530, "DX" v9): other mods (Digi Matrix, Digi Poly, ...)
- * claim the same spare, so the packings corrupted one another. The table is
- * RAM-only (the spare was too): values follow a pattern switch and last the
- * session, and a pattern not seen yet (or after a power cycle / project load)
- * adopts the live values, so the sound never jumps. Only the read-only kit
- * pointer is touched -- no stock memory is written or read. */
+ * Our FX params have no stock field, so they ride the saved pattern in ONE
+ * MIDI-track record, exactly as on the Digitone: MIDI track 8 (t = 7), reserved
+ * on MIDI channel 16. Each kit (one per pattern) carries eight 0x6c-byte MIDI
+ * records at kit + 0x59a + t*0x70; the firmware's pattern serializer copies the
+ * first 41 words of each record to the +Drive and back (0x4007a300 -> 0x40079d22
+ * on save, 0x40079f86 -> 0x40079cc2 on load), so a record survives a pattern
+ * switch, a project save/load and a power cycle. That is the DT1 equivalent of
+ * the Digitone's reserved MIDI track, and it does not touch the kit spare that
+ * Digi Matrix / Digi Poly / Digi EQ use (kitstore.h).
+ *
+ * The store lives at record + 0x10, after the byte the loader remaps at +8, and
+ * uses 0x42 bytes (record +0x10..+0x51), all inside the 41 saved words. The
+ * params are packed (1-7 bits each, "DGX4" magic + version + count) so 32 of them
+ * fit easily. A block that no longer carries the magic (a stock MIDI write) is
+ * reclaimed from the live values; a genuine block (pattern reload) is adopted.
+ * Reserve MIDI track 8 on channel 16 and leave it alone on the DT1. */
 #define DT_UI_KIT     (*(unsigned char *volatile *)F_4199dc44)
 #define DT_KIT0       ((unsigned)F_4191e018)
 #define DT_KIT_STEP   0x91eu
-#define DN_PAT_SLOTS  128u
+#define DT_PAT_SLOTS  128u
+#define DT_MIDI0      0x59au            /* first MIDI record in the kit */
+#define DT_MIDI_STEP  0x70u             /* one record every 0x70 bytes */
+#define DT_STORE_TRACK 7u               /* MIDI track 8 */
+#define DT_STORE_OFF  (DT_MIDI0 + DT_STORE_TRACK * DT_MIDI_STEP + 0x10u)
 
-#define DN_STORE_N    48
+#define DN_STORE_N    32
+#define DN_STORE_VER  2
+#define DN_STORE_LEN  0x42u             /* record +0x10..+0x51 */
+#define DN_STORE_MAG(a) ((a)[0] == 'D' && (a)[1] == 'G' && (a)[2] == 'X' && \
+                         (a)[3] == '4' && (a)[4] == DN_STORE_VER)
 
 static int *const dn_fxparam[DN_STORE_N] = {
     &digiring_on, &digiring_depth, &digiring_freq,
@@ -195,70 +199,110 @@ static int *const dn_fxparam[DN_STORE_N] = {
     &digiwave_on, &digiwave_son, &digiwave_pmode, &digiwave_smode, &digiwave_page,
     &digiwave_speed, &digiwave_pdepth, &digiwave_sdepth,
     &digiwave_mix, &digiwave_fb, &digiwave_pmix,
-    &digiwash_on, &digiwash_amount,
-    &dgmac2_on, &dgmac2_amount,
-    &dgmac3_on, &dgmac3_amount,
-    &dgmac4_on, &dgmac4_amount,
-    &digiwrmz_on, &digigrainz_on, &digiwrmz_mode,
+    &digiwrmz_on,
     &digiwrmz_time, &digiwrmz_fb, &digiwrmz_tone,
     &digiwrmz_mod, &digiwrmz_rate, &digiwrmz_mix,
-    &digigrainz_dens, &digigrainz_size, &digigrainz_pitch,
-    &digigrainz_spray, &digigrainz_fb, &digigrainz_mix,
+};
+/* Bits per param, in dn_fxparam order: 1 for on/off and the mode switches,
+ * 7 for the 0..127 values. 9*1 + 23*7 = 170 bits -> 22 bytes + a 7-byte
+ * header = 38 of the record's 0x6c bytes. */
+static const unsigned char dn_stbits[DN_STORE_N] = {
+    /* ring */ 1,7,7, /* eq */ 1,7,7, /* fold */ 1,7,7, /* meter */ 1,
+    /* crush */ 1,7,7,7,
+    /* wave */ 1,1,7,7,1, 7,7,7, 7,7,7,
+    /* delays */ 1, 7,7,7,7,7,7
 };
 
-static short dn_tab[DN_PAT_SLOTS][DN_STORE_N];
-static unsigned char dn_seen[DN_PAT_SLOTS];
-static int dn_slot = -1;                        /* slot the globals belong to */
-static int dn_store_dirty;                      /* a page edit is pending */
+static unsigned char *dn_store_blk;             /* record we last synced */
+static unsigned char dn_store_copy[DN_STORE_LEN];
+static int dn_store_dirty;                      /* a page/CC edit is pending */
+static int dn_sync_ph;                          /* ticks between record compares */
 
-static int dn_cur_slot(void)
+static unsigned char *dn_store_slot(void)
 {
-    unsigned p = (unsigned)DT_UI_KIT;
-    if (p < DT_KIT0 || p >= DT_KIT0 + DN_PAT_SLOTS * DT_KIT_STEP ||
-        (p - DT_KIT0) % DT_KIT_STEP)
-        return -1;
-    return (int)((p - DT_KIT0) / DT_KIT_STEP);
+    unsigned k = (unsigned)DT_UI_KIT;
+    if (k < DT_KIT0 || k >= DT_KIT0 + DT_PAT_SLOTS * DT_KIT_STEP ||
+        (k - DT_KIT0) % DT_KIT_STEP)
+        return 0;
+    return (unsigned char *)k + DT_STORE_OFF;
 }
 
-static void dn_tab_save(int s)
+/* DN_STORE_N params, dn_stbits[i] bits each, little-endian bitstream after b[7]. */
+static void dn_store_read(const unsigned char *b)
 {
-    int i;
-    if (s < 0)
-        return;
-    for (i = 0; i < DN_STORE_N; i++)
-        dn_tab[s][i] = (short)*dn_fxparam[i];
-    dn_seen[s] = 1;
+    unsigned acc = 0;
+    int nbits = 0, i, o = 7;
+    for (i = 0; i < DN_STORE_N; i++) {
+        int w = dn_stbits[i];
+        while (nbits < w) { acc |= (unsigned)b[o++] << nbits; nbits += 8; }
+        *dn_fxparam[i] = (int)(acc & ((1u << w) - 1u));
+        acc >>= w;
+        nbits -= w;
+    }
 }
 
-static void dn_tab_load(int s)
+static void dn_store_write(unsigned char *b)
 {
-    int i;
-    for (i = 0; i < DN_STORE_N; i++)
-        *dn_fxparam[i] = dn_tab[s][i];
+    unsigned acc = 0;
+    int nbits = 0, i, o = 7;
+    b[0] = 'D'; b[1] = 'G'; b[2] = 'X'; b[3] = '4';       /* "DGX4" */
+    b[4] = DN_STORE_VER;
+    b[5] = (DN_STORE_N >> 8) & 0xff; b[6] = DN_STORE_N & 0xff;
+    for (i = 0; i < DN_STORE_N; i++) {
+        int w = dn_stbits[i];
+        acc |= (unsigned)(*dn_fxparam[i] & ((1u << w) - 1u)) << nbits;
+        nbits += w;
+        while (nbits >= 8) {
+            b[o++] = (unsigned char)(acc & 0xff);
+            acc >>= 8;
+            nbits -= 8;
+        }
+    }
+    if (nbits)
+        b[o++] = (unsigned char)(acc & 0xff);
+    while (o < DN_STORE_LEN)
+        b[o++] = 0;                                       /* clear the tail */
 }
 
-/* Once a UI frame: follow a pattern switch and flush a pending page edit. The
- * table is ours alone, so there is no adopt guard to run. */
+/* Once a UI frame: follow a pattern switch, persist a page edit, and adopt a
+ * genuine pattern record (a reload/switch) while reclaiming a stock write. */
 static void dn_store_sync(void)
 {
-    int s = dn_cur_slot();
-    if (s != dn_slot) {
-        if (dn_slot >= 0 && dn_store_dirty)
-            dn_tab_save(dn_slot);           /* flush the pattern we are leaving */
-        dn_slot = s;
-        if (s >= 0) {
-            if (dn_seen[s])
-                dn_tab_load(s);             /* seen: restore its values */
-            else
-                dn_tab_save(s);             /* fresh: adopt the live values */
-        }
-        dn_store_dirty = 0;
+    unsigned char *b = dn_store_slot();
+    int i;
+    if (!b)
         return;
+    if (b == dn_store_blk) {
+        if (dn_store_dirty) {
+            dn_store_write(b);
+        } else if (dn_sync_ph++ & 7) {
+            return;                          /* nothing pending, same pattern:
+                                              * compare only every 8th tick */
+        } else {
+            for (i = 0; i < DN_STORE_LEN; i++)
+                if (b[i] != dn_store_copy[i])
+                    break;
+            if (i < DN_STORE_LEN) {          /* the record changed: adopt only a
+                                              * genuine one; a stock write is
+                                              * reclaimed, not read. */
+                if (DN_STORE_MAG(b))
+                    dn_store_read(b);
+                else
+                    dn_store_write(b);
+            }
+        }
+    } else {
+        if (dn_store_blk && dn_store_dirty)
+            dn_store_write(dn_store_blk);    /* flush the pattern we are leaving */
+        dn_store_blk = b;                    /* pattern switch / first sync */
+        if (DN_STORE_MAG(b))
+            dn_store_read(b);
+        else
+            dn_store_write(b);               /* new pattern: adopt live values */
     }
-    if (s >= 0 && dn_store_dirty) {
-        dn_tab_save(s);
-        dn_store_dirty = 0;
-    }
+    dn_store_dirty = 0;
+    for (i = 0; i < DN_STORE_LEN; i++)
+        dn_store_copy[i] = b[i];
 }
 
 static int clampi(int v, int lo, int hi);
@@ -304,7 +348,6 @@ static void dg_slot(void *bmp, int x, const char *s, int v);
 #define DN_CC_WV_FB     51
 /* DELAYS (4.0a). 80..87 are free on the DT1 (verify against its CC table). */
 #define DN_CC_DLY_ON    80
-#define DN_CC_DLY_MODE  81
 #define DN_CC_DLY_1     82
 #define DN_CC_DLY_2     83
 #define DN_CC_DLY_3     84
@@ -342,9 +385,7 @@ void digictl_cc_apply(int cc, int value)
                            else digiwave_pdepth = v; break;
     case DN_CC_WV_MIX:     digiwave_mix = v; break;
     case DN_CC_WV_FB:      digiwave_fb = v; break;
-    case DN_CC_DLY_ON:     if (digiwrmz_mode) digigrainz_on = (v >= 64);
-                           else digiwrmz_on = (v >= 64); break;
-    case DN_CC_DLY_MODE:   digiwrmz_mode = (v >= 64); break;
+    case DN_CC_DLY_ON:     digiwrmz_on = (v >= 64); break;
     case DN_CC_DLY_1:      dgdly_set(0, v); break;
     case DN_CC_DLY_2:      dgdly_set(1, v); break;
     case DN_CC_DLY_3:      dgdly_set(2, v); break;
@@ -474,178 +515,18 @@ static void pf_apply(void)
     }
 }
 
-/* ---- MACRO pages: one value drives a bundle of engines -----------------------
- * Each macro drives its own engines; a group is captured the first block a macro
- * needs it and restored the block no macro needs it any more. An engine a macro
- * does not drive is left live -- e.g. CRUSH/REDUX stays on the knobs while WASH
- * is on. Runs in ev_render_in; a single flag test when none are on.
- *   WASH    = wobble only (WAVE WOB, 75% depth / 30% rate at full) + WRMZ wash
- *   RADIO   = EQ tilt (low -> 0, high -> 127) + drive (fold) + SRR (crush)
- *   DESTROY = fold + bits (crush) + ring
- *   SPACE   = stereo width (WAVE WIDE)
- * RADIO/DESTROY/SPACE are a test build: their state is .bss, not stored yet. */
-#define MW_WOB_DEP   95                     /* WASH wobble depth at full (75% of 127) */
-#define MW_WOB_RATE  38                     /* WASH wobble rate at full (30% of 127) */
-#define MW_DLY_MIX   96                     /* WRMZ mix at full WASH */
-#define MW_DLY_FB    64                     /* WRMZ feedback at full WASH (~0.40) */
-#define MW_RAD_SRR   40                     /* RADIO SRR amount at full (dialed down) */
-#define MG_WAVE   1                         /* engine-group bits */
-#define MG_CRUSH  2
-#define MG_FOLD   4
-#define MG_RING   8
-#define MG_EQ     16
-#define MG_WRMZ   32
-static int mw_drv;                          /* groups driven last block */
-static int mb_wav_on, mb_wav_son, mb_wav_page, mb_wav_pmode, mb_wav_smode;
-static int mb_wav_pd, mb_wav_sd, mb_wav_mix, mb_wav_fb, mb_wav_spd;
-static int mb_cru_on, mb_cru_mode, mb_cru_amt, mb_cru_tune;
-static int mb_fold_on, mb_fold_amt, mb_fold_mode;
-static int mb_rng_on, mb_rng_dep, mb_rng_frq;
-static int mb_eq_on, mb_eq_lo, mb_eq_hi;
-static int mb_dly_on, mb_dly_mode, mb_dly_mix, mb_dly_fb;
-
-static void mw_cap(int g)
-{
-    if (g & MG_WAVE) {
-        mb_wav_on = digiwave_on; mb_wav_son = digiwave_son; mb_wav_page = digiwave_page;
-        mb_wav_pmode = digiwave_pmode; mb_wav_smode = digiwave_smode;
-        mb_wav_pd = digiwave_pdepth; mb_wav_sd = digiwave_sdepth;
-        mb_wav_mix = digiwave_mix; mb_wav_fb = digiwave_fb; mb_wav_spd = digiwave_speed;
-    }
-    if (g & MG_CRUSH) {
-        mb_cru_on = digicrush_on; mb_cru_mode = digicrush_mode;
-        mb_cru_amt = digicrush_amount; mb_cru_tune = digicrush_tune;
-    }
-    if (g & MG_FOLD) {
-        mb_fold_on = digifold_on; mb_fold_amt = digifold_amount; mb_fold_mode = digifold_mode;
-    }
-    if (g & MG_RING) {
-        mb_rng_on = digiring_on; mb_rng_dep = digiring_depth; mb_rng_frq = digiring_freq;
-    }
-    if (g & MG_EQ) {
-        mb_eq_on = digieq_on; mb_eq_lo = digieq_lo; mb_eq_hi = digieq_hi;
-    }
-    if (g & MG_WRMZ) {
-        mb_dly_on = digiwrmz_on; mb_dly_mode = digiwrmz_mode;
-        mb_dly_mix = digiwrmz_mix; mb_dly_fb = digiwrmz_fb;
-    }
-}
-
-static void mw_res(int g)
-{
-    if (g & MG_WAVE) {
-        digiwave_on = mb_wav_on; digiwave_son = mb_wav_son; digiwave_page = mb_wav_page;
-        digiwave_pmode = mb_wav_pmode; digiwave_smode = mb_wav_smode;
-        digiwave_pdepth = mb_wav_pd; digiwave_sdepth = mb_wav_sd;
-        digiwave_mix = mb_wav_mix; digiwave_fb = mb_wav_fb; digiwave_speed = mb_wav_spd;
-    }
-    if (g & MG_CRUSH) {
-        digicrush_on = mb_cru_on; digicrush_mode = mb_cru_mode;
-        digicrush_amount = mb_cru_amt; digicrush_tune = mb_cru_tune;
-    }
-    if (g & MG_FOLD) {
-        digifold_on = mb_fold_on; digifold_amount = mb_fold_amt; digifold_mode = mb_fold_mode;
-    }
-    if (g & MG_RING) {
-        digiring_on = mb_rng_on; digiring_depth = mb_rng_dep; digiring_freq = mb_rng_frq;
-    }
-    if (g & MG_EQ) {
-        digieq_on = mb_eq_on; digieq_lo = mb_eq_lo; digieq_hi = mb_eq_hi;
-    }
-    if (g & MG_WRMZ) {
-        digiwrmz_on = mb_dly_on; digiwrmz_mode = mb_dly_mode;
-        digiwrmz_mix = mb_dly_mix; digiwrmz_fb = mb_dly_fb;
-    }
-}
-
-static void mw_one(int k, int a)
-{
-    switch (k) {
-    case DN_WASHKIND:                   /* wobble only + the WRMZ wash */
-        digiwave_on = 1; digiwave_son = 0;
-        digiwave_page = 0; digiwave_pmode = 0;         /* PITCH group, WOB */
-        digiwave_pdepth = a * MW_WOB_DEP / 127;
-        digiwave_speed = a * MW_WOB_RATE / 127;
-        digiwrmz_on = 1; digiwrmz_mode = 0;            /* WRMZ */
-        digiwrmz_mod = 0;                              /* static read: no interp */
-        digiwrmz_mix = a * MW_DLY_MIX / 127;
-        digiwrmz_fb = a * MW_DLY_FB / 127;
-        break;
-    case DN_RADKIND:                    /* AM radio: tilt + drive + SRR */
-        digieq_on = 1;
-        digieq_lo = 64 - a * 64 / 127;                 /* low -> 0 at full */
-        digieq_hi = 64 + a * 63 / 127;                 /* high -> 127 at full */
-        digifold_on = 1; digifold_mode = 127;          /* TRSH: full fold + OD */
-        digifold_amount = a * 110 / 127;
-        digicrush_on = 1; digicrush_mode = 64;         /* SRR only */
-        digicrush_amount = a * MW_RAD_SRR / 127;       /* dialed down from 72 */
-        break;
-    case DN_DESKIND:                    /* fold + bits + ring */
-        digifold_on = 1; digifold_amount = a * 60 / 127;
-        digicrush_on = 1; digicrush_mode = 21; digicrush_amount = a * 70 / 127;
-        digiring_on = 1; digiring_depth = a * 40 / 127;
-        break;
-    default:                            /* SPACE: stereo width */
-        digiwave_son = 1; digiwave_page = 1; digiwave_smode = 106; digiwave_sdepth = a;
-        break;
-    }
-}
-
-static void mw_apply(void)
-{
-    int d = 0, stop, start;
-    if (digiwash_on) d |= MG_WAVE | MG_WRMZ;
-    if (dgmac2_on)   d |= MG_EQ | MG_FOLD | MG_CRUSH;
-    if (dgmac3_on)   d |= MG_FOLD | MG_CRUSH | MG_RING;
-    if (dgmac4_on)   d |= MG_WAVE;
-
-    stop = mw_drv & ~d;                 /* no macro needs it now: restore once */
-    if (stop)
-        mw_res(stop);
-    start = d & ~mw_drv;                /* a macro needs it now: capture the base */
-    if (start)
-        mw_cap(start);
-
-    if (d) {                            /* rebuild the driven groups, then apply */
-        mw_res(d);
-        if (digiwash_on)
-            mw_one(DN_WASHKIND, digiwash_amount);
-        if (dgmac2_on)
-            mw_one(DN_RADKIND, dgmac2_amount);
-        if (dgmac3_on)
-            mw_one(DN_DESKIND, dgmac3_amount);
-        if (dgmac4_on)
-            mw_one(DN_SPCKIND, dgmac4_amount);
-    }
-    mw_drv = d;
-}
-
-static int *mw_onp(int k)
-{
-    return k == DN_WASHKIND ? &digiwash_on :
-           k == DN_RADKIND ? &dgmac2_on :
-           k == DN_DESKIND ? &dgmac3_on : &dgmac4_on;
-}
-
-static int *mw_amtp(int k)
-{
-    return k == DN_WASHKIND ? &digiwash_amount :
-           k == DN_RADKIND ? &dgmac2_amount :
-           k == DN_DESKIND ? &dgmac3_amount : &dgmac4_amount;
-}
-
 /* DT1: our pages are all kind 0, told apart by place (dc_block/cur_kind); this
  * list is unused here but kept so the merged source reads as the original's. */
 static const int dc_kinds[DN_NPAGES] = {
     DN_FXKIND, DN_FEKIND, DN_EQKIND, DN_CRKIND, DN_WVKIND, DN_WSKIND,
-    DN_PFKIND, DN_WASHKIND, DN_RADKIND, DN_DESKIND, DN_SPCKIND, DN_DLYKIND
+    DN_PFKIND, DN_DLYKIND, DN_STUKIND
 };
 
 #define DN_MASTER_VT  F_401845dc     /* the DT1's master view */
 static char *dc_view;               /* the master view, from its last draw */
 static int dc_vis;                  /* frames since the master view was drawn */
 static int dc_meter_vis;            /* FOLD page (the meter reader) is up */
-static int dc_perf_prev = -1;       /* FX kind to return to from the macro tree */
+static int dc_perf_prev = -1;       /* FX kind to return to from the PERFORM tree */
 static int dc_func;                 /* FUNC held: encoder turns snap to 0/127 */
 static int dc_rate = 3;             /* ticks between redraws (animated pages) */
 static int dc_ctr;                  /* ticks since the last redraw */
@@ -667,7 +548,6 @@ void digictl_mod_in(void)
     int idx, d = digimod_dest, v = digimod_voice;
     dc_out = dn_out_off();               /* the half this block writes */
     pf_apply();                          /* PERFORM-page momentary pads */
-    mw_apply();                          /* MACRO-page drivers (WASH) */
     /* The track-LFO bridge is parked: it only drives a param when explicitly
      * enabled (digimod_dest 1..5). A stock OS event never sets it. */
     if (v < 1 || v > 8 || d < 1 || d > 5)
@@ -740,7 +620,7 @@ int digictl_meter_active(void)
     return dc_meter_vis;
 }
 
-/* DT1 port: our seven pages are seven kind-0 entries in a row (DT_KIND, the "None" page); the
+/* DT1 port: our nine pages are nine kind-0 entries in a row (DT_KIND, the "None" page); the
  * page number is the place in that run. The run's start in the vector, or -1. */
 #define DT_KIND 0
 static int dc_block(char *view)
@@ -778,13 +658,13 @@ static int dc_find_kind(char *view, int k)
 
 /* The two page trees. LEFT/RIGHT cycle within the active tree; UP moves between
  * them. Tree 1 = the FX pages, in play order (FOLD - CRUSH - RING - STEREO -
- * PITCH - TILT); tree 2 = PERFORM + the four macros, reached with UP. PERFORM is
+ * PITCH - TILT); tree 2 = PERFORM + STUTTER, reached with UP. PERFORM is
  * not part of the tree-1 cycle. */
 static const int dc_tree1[DN_TREE1_N] = {
     DN_FEKIND, DN_CRKIND, DN_FXKIND, DN_WSKIND, DN_WVKIND, DN_EQKIND, DN_DLYKIND
 };
-static const int dc_tree2[5] = {
-    DN_PFKIND, DN_WASHKIND, DN_RADKIND, DN_DESKIND, DN_SPCKIND
+static const int dc_tree2[DN_TREE2_N] = {
+    DN_PFKIND, DN_STUKIND
 };
 
 void dt_page_show(void *view);   /* DT1: a page change as the stock page key makes one */
@@ -812,7 +692,7 @@ static int dc_goto_idx(char *view, int idx)
 }
 
 /* The main LEFT/RIGHT scroll, as VECTOR INDICES: every stock page (not our
- * run), then our FX pages in play order. The macro tree (PERFORM + macros) is
+ * run), then our FX pages in play order. The PERFORM tree (PERFORM + STUTTER) is
  * NOT here - it is reached with UP. */
 static int dc_main_list(char *view, int *buf)
 {
@@ -875,11 +755,11 @@ static void add_page(char *view)
  * stock code reads them (its draw, and the title, vtable slot 19: page_glue.s) */
 static const char *const dc_short[DN_NPAGES] = {
     "RING", "FOLD", "TILT", "CRUSH", "PITCH", "STEREO", "PERF",
-    "WASH", "RADIO", "DESTROY", "SPACE", "DELAYS"
+    "DELAYS", "STUTTER"
 };
 static const char *const dc_long[DN_NPAGES] = {
     "DIGI RING", "DIGI FOLD", "DIGI TILT", "DIGI CRUSH", "DIGI PITCH", "DIGI STEREO", "PERFORM",
-    "DIGI WASH", "DIGI RADIO", "DIGI DESTROY", "DIGI SPACE", "DIGI DELAYS"
+    "DIGI DELAYS", "DIGI STUTTER"
 };
 
 void digictl_names(void *view)
@@ -985,7 +865,7 @@ static void dg_arrows(void *bmp)
 
 /* An OFF message box: a 1 px frame with "OFF" inside, centred horizontally and
  * sitting above the vertical middle of the drawable area. Drawn over the page
- * when its FX / macro section is switched off. */
+ * when its FX section is switched off. */
 static void dg_offbox(void *bmp)
 {
     const char *s = "OFF";
@@ -993,20 +873,6 @@ static void dg_offbox(void *bmp)
     int x0 = (128 - (w + 12)) / 2, x1 = x0 + w + 11;
     int y0 = 51, y1 = 37;                   /* box top / bottom (stock coords) */
     dg_fill(x0, y0, x1, y1, 0);             /* clear the box area */
-    dg_frame(x0, y0, x1, y1);
-    dg_text(bmp, (128 - w) / 2, 48, s, 1);
-}
-
-/* The same framed box, top-right, shown when this page's FX is being driven by
- * one of the macro pages: the macro overwrites the FX params every block, so
- * the page's encoders are effectively locked. */
-static void dg_macrobox(void *bmp)
-{
-    const char *s = "MACRO";
-    int w = dg_strw(s, 1);
-    int x0 = (128 - (w + 12)) / 2, x1 = x0 + w + 11;   /* same slot as OFF */
-    int y0 = 51, y1 = 37;
-    dg_fill(x0, y0, x1, y1, 0);
     dg_frame(x0, y0, x1, y1);
     dg_text(bmp, (128 - w) / 2, 48, s, 1);
 }
@@ -1176,44 +1042,38 @@ static void dg_eq_page(void *bmp)
 /* ---------------- CRUSH: big stage name + amount/tune bars ---------------- */
 static const char *dg_crushname(int m)
 {
-    static const char *const n[3] = { "BITS", "REDUX", "CRUNCH" };
-    int b = m * 3 / 128;
-    if (b > 2) b = 2;
+    static const char *const n[2] = { "REDUX", "CRUNCH" };
+    int b = m * 2 / 128;
+    if (b > 1) b = 1;
     return n[b];
 }
 
 /* left third, HORIZONTAL: collapses to a flat line at amount 0; the scroll
- * waveform gets quantised (BITS) / held (SR) / clipped (CRUNCH) and taller as
- * amount rises; tune adds dither specks. No frame. */
+ * waveform gets held (REDUX) or clipped (CRUNCH) and taller as amount rises. */
 static int dg_cr_ph;
 static void dg_crush_gfx(void *bmp)
 {
-    int mode = digicrush_mode * 3 / 128;
+    int mode = digicrush_mode * 2 / 128;
     int amt = digicrush_on ? digicrush_amount : 0;
     int cy = 26, x;
     (void)bmp;
-    if (mode > 2) mode = 2;
+    if (mode > 1) mode = 1;
     dg_cr_ph += 1 + (amt >> 4);
     for (x = 4; x <= 40; x += 2) {
-        int amp = (amt * 12) / 127;                     /* 0 -> a line */
+        int amp = (amt * 12) / 127;
         int px = (x - 4 + dg_cr_ph) & 0x1f;
         int v = (sin256[(px << 3) & 0xff] * amp) >> 15;
         int y;
-        if (mode == 0 && amt > 0) {                     /* BITS: quantise */
-            int step = 1 + (amt * 8) / 127;
-            v = (v / step) * step;
-        } else if (mode == 1 && amt > 0) {              /* SR: sample-hold */
+        if (mode == 0 && amt > 0) {                     /* REDUX: hold */
             int hold = 1 + amt / 20;
             v = (v / hold) * hold;
-        } else if (mode == 2 && amt > 0) {              /* CRUNCH: clip */
+        } else if (mode == 1 && amt > 0) {              /* CRUNCH: clip */
             int lim = amp - (amt * (amp - 1)) / 127;
             if (v > lim) v = lim;
             if (v < -lim) v = -lim;
         }
         y = cy + v;
         dg_px(x, y);
-        if (mode == 0 && digicrush_tune > 0 && dg_rand(48) < digicrush_tune / 4)
-            dg_fill(x, cy - 10, x, cy + 10, 1);          /* dither specks */
     }
 }
 
@@ -1371,136 +1231,20 @@ static void dg_perf_page(void *bmp)
     }
 }
 
-/* ---------------- MACRO pages: one slider (right) + a per-page graphic -------
- * Each draw is <= ~64 FILLRECT calls and the tick gates redraws (see
- * digictl_tick). The value is centred under the slider, the title on the
- * display. */
-static int dg_wa_ph;
-static void dg_wa_num(char *s, int v)
-{
-    if (v >= 100) {
-        s[0] = '0' + v / 100; s[1] = '0' + (v / 10) % 10; s[2] = '0' + v % 10;
-        s[3] = 0;
-    } else if (v >= 10) {
-        s[0] = '0' + v / 10; s[1] = '0' + v % 10; s[2] = 0;
-    } else {
-        s[0] = '0' + v; s[1] = 0;
-    }
-}
-
-static void dg_macro_frame(void *bmp, const char *title, int on, int amt)
-{
-    char num[4];
-    dg_slider(bmp, 121, on ? amt : 0, 127);   /* empty = off, filled = on */
-    dg_wa_num(num, amt);
-    DN_TEXTF(bmp, DN_FONT5, 121 - dg_strw(num, 1) / 2, 4, -1, "%s", num);
-    DN_TEXTF(bmp, DN_FONT5, (128 - dg_strw(title, 1)) / 2, 24, -1, "%s", title);
-}
-
-/* WASH - a drifting cloud of dots filling the screen (a simpler "Haze"). */
-static void dg_wash_page(void *bmp)
-{
-    int amt = digiwash_on ? digiwash_amount : 0;
-    int i;
-    dg_fill(0, 0, 127, DG_TOP - 1, 0);
-    dg_wa_ph += 1 + (amt >> 5);
-    for (i = 0; i < 56; i++) {
-        int x = (int)((i * 53 + dg_wa_ph * 2) % 128);
-        int y = (int)((i * 29 + dg_wa_ph) % (DG_TOP - 1));
-        dg_px(x, y);
-    }
-    dg_macro_frame(bmp, "WASH", digiwash_on, digiwash_amount);
-}
-
-/* RADIO ??? a speaker cone that shrinks as it is driven, with a pulsing ring. */
-static int dg_ra_ph;
-static void dg_radio_page(void *bmp)
-{
-    int amt = dgmac2_on ? dgmac2_amount : 0;
-    int cx = 54, cy = 26;
-    int R = 25 - amt * 12 / 127;        /* outer ring fills the height */
-    int i, n = 24;
-    dg_fill(0, 0, 127, DG_TOP - 1, 0);
-    dg_ra_ph += 2 + (amt >> 4);
-    for (i = 0; i < n; i++) {           /* outer ring + inner cone */
-        int a = (i * 256 / n + dg_ra_ph) & 0xff;
-        int s = sin256[a], c = sin256[(a + 64) & 0xff];
-        int rr = R + ((sin256[a] * (amt >> 3)) >> 15);
-        int x = cx + ((c * rr) >> 15), y = cy + ((s * rr) >> 15);
-        dg_px(x, y);
-        x = cx + ((c * (rr >> 1)) >> 15);
-        y = cy + ((s * (rr >> 1)) >> 15);
-        dg_px(x, y);
-    }
-    dg_px(cx, cy);
-    dg_macro_frame(bmp, "RADIO", dgmac2_on, dgmac2_amount);
-}
-
-/* DESTROY ??? a sine that stair-steps (quantises) more with the amount. */
-static int dg_de_ph;
-static void dg_destroy_page(void *bmp)
-{
-    int amt = dgmac3_on ? dgmac3_amount : 0;
-    int step = 1 + amt * 10 / 127;
-    int amp = 6 + amt * 14 / 127;
-    int x;
-    dg_fill(0, 0, 127, DG_TOP - 1, 0);
-    dg_de_ph += 1 + (amt >> 5);
-    for (x = 0; x <= 112; x += 3) {
-        int idx = ((x * 256) / 24 + dg_de_ph) & 0xff;
-        int y = 26 + ((sin256[idx] * amp) >> 15);
-        if (step > 1)
-            y = (y / step) * step;
-        if (y < 0) y = 0;
-        if (y > DG_TOP - 1) y = DG_TOP - 1;
-        dg_px(x, y);
-    }
-    dg_macro_frame(bmp, "DESTROY", dgmac3_on, dgmac3_amount);
-}
-
-/* SPACE ??? a centre line that splits into two as the width opens. */
-static int dg_sp_ph;
-static void dg_space_page(void *bmp)
-{
-    int amt = dgmac4_on ? dgmac4_amount : 0;
-    int spread = 2 + amt * 16 / 127;
-    int x;
-    dg_fill(0, 0, 127, DG_TOP - 1, 0);
-    dg_sp_ph += 1 + (amt >> 5);
-    for (x = 0; x <= 112; x += 4) {
-        int idx = ((x * 256) / 32 + dg_sp_ph) & 0xff;
-        int s = (sin256[idx] * 4) >> 15;
-        dg_px(x, 26 + spread + s);
-        dg_px(x, 26 - spread + s);
-    }
-    dg_macro_frame(bmp, "SPACE", dgmac4_on, dgmac4_amount);
-}
-
-/* ---- DELAYS page: the one delay line in WRMZ or GRAINZ mode (D switches).
- * Slots 0..5 are the six params on B/C/E/F/G/H; A is on/off, D the mode. ---- */
+/* ---- DELAYS page: the one delay line (WRMZ).
+ * Slots 0..5 are the six params on B/C/E/F/G/H; A is on/off. ---- */
 static int *dgdly_wrmz[6] = {
     &digiwrmz_time, &digiwrmz_fb, &digiwrmz_tone,
     &digiwrmz_mod, &digiwrmz_rate, &digiwrmz_mix
 };
-static int *dgdly_grainz[6] = {
-    &digigrainz_dens, &digigrainz_size, &digigrainz_pitch,
-    &digigrainz_spray, &digigrainz_fb, &digigrainz_mix
-};
 static const char *const dgdly_wlbl[6] = { "TIM", "FB", "TON", "MOD", "RAT", "MIX" };
-static const char *const dgdly_glbl[6] = { "DEN", "SIZ", "PIT", "SPR", "FB", "MIX" };
 static int dc_act_id;               /* last-moved slider's encoder id (0 = none) */
 static int dc_act_kind;             /* page of the last-moved encoder */
 
-static int *dgdly_onp(void)
-{
-    return digiwrmz_mode ? &digigrainz_on : &digiwrmz_on;
-}
-
 static void dgdly_set(int slot, int val)
 {
-    int **a = digiwrmz_mode ? dgdly_grainz : dgdly_wrmz;
     if (slot >= 0 && slot < 6)
-        *a[slot] = clampi(val, 0, 127);
+        dgdly_wrmz[slot][0] = clampi(val, 0, 127);
 }
 
 static int dg_dl_ph;
@@ -1524,9 +1268,9 @@ static void dg_sec_caption(void *bmp, int x, const char *s, int v)
 
 static void dg_delay_page(void *bmp)
 {
-    int **a = digiwrmz_mode ? dgdly_grainz : dgdly_wrmz;
-    const char *const *lbl = digiwrmz_mode ? dgdly_glbl : dgdly_wlbl;
-    int on = *dgdly_onp();
+    int **a = dgdly_wrmz;
+    const char *const *lbl = dgdly_wlbl;
+    int on = digiwrmz_on;
     int mixv = *a[5];
     int y, ph, amp, sec = -1;
     dg_fill(0, 0, 127, DG_TOP - 1, 0);
@@ -1539,10 +1283,9 @@ static void dg_delay_page(void *bmp)
         dg_px(20 + s, y);
         dg_px(28 - s, y + 2);
     }
-    dg_bigname(bmp, digiwrmz_mode ? "GRAINZ" : "WRMZ");
-    dg_slider(bmp, 118, on ? mixv : 0, 127);          /* the one fixed slider */
+    dg_bigname(bmp, "WRMZ");
+    dg_slider(bmp, 118, on ? mixv : 0, 127);
     dg_slot(bmp, 118, "MIX", mixv);
-    /* secondary slider: whichever of slots 0..4 was last moved on THIS page */
     if (dc_act_kind == DN_DLYKIND) {
         static const signed char so[9] = { -1, -1, 0, 1, -1, 2, 3, 4, 5 };
         int id = dc_act_id;
@@ -1556,23 +1299,6 @@ static void dg_delay_page(void *bmp)
     dg_title(bmp, "DELAYS");
 }
 
-/* Is this page's FX being driven (locked) by one of the macro pages? Matches
- * what mw_one() touches: WASH -> WAVE pitch (WOB) + WRMZ, RADIO -> EQ + fold +
- * crush, DESTROY -> fold + crush + ring, SPACE -> WAVE stereo. */
-static int dg_page_locked(int k)
-{
-    switch (k) {
-    case DN_FXKIND:   return dgmac3_on;                              /* DESTROY */
-    case DN_FEKIND:   return dgmac2_on || dgmac3_on;                 /* RADIO, DESTROY */
-    case DN_EQKIND:   return dgmac2_on;                              /* RADIO */
-    case DN_CRKIND:   return dgmac2_on || dgmac3_on;                 /* RADIO, DESTROY */
-    case DN_WVKIND:   return digiwash_on;                            /* WASH (WOB) */
-    case DN_WSKIND:   return dgmac4_on;                              /* SPACE (WIDE) */
-    case DN_DLYKIND:  return digiwash_on;                            /* WASH (WRMZ) */
-    default:          return 0;
-    }
-}
-
 /* Is the section the current page edits switched off? PERFORM has no on/off. */
 static int dg_page_off(int k)
 {
@@ -1583,11 +1309,7 @@ static int dg_page_off(int k)
     case DN_CRKIND:   return !digicrush_on;
     case DN_WVKIND:   return !digiwave_on;
     case DN_WSKIND:   return !digiwave_son;
-    case DN_WASHKIND: return !digiwash_on;
-    case DN_RADKIND:  return !dgmac2_on;
-    case DN_DESKIND:  return !dgmac3_on;
-    case DN_SPCKIND:  return !dgmac4_on;
-    case DN_DLYKIND:  return !*dgdly_onp();
+    case DN_DLYKIND:  return !digiwrmz_on;
     default:          return 0;
     }
 }
@@ -1606,12 +1328,10 @@ void digictl_mdraw(void *view, void *bmp)
      * redraws the whole stock page + our overlay. 3 (~10 Hz) -> 6 halves it, and a
      * page whose section is OFF has nothing to animate so it takes the static rate. */
     dc_rate = 6;
-    if (k == DN_PFKIND)
+    if (k == DN_PFKIND || k == DN_STUKIND)
         dc_rate = 8;                          /* static page */
     else if (dg_page_off(k))
         dc_rate = 8;                          /* section off: no animation */
-    else if (k >= DN_WASHKIND && k <= DN_SPCKIND && !*mw_onp(k))
-        dc_rate = 8;                          /* macro off: static */
     dc_ctr = 0;
     dc_vis = dc_rate + 2;
     dg_bmp = bmp;                         /* DT1: the stock draw target */
@@ -1631,19 +1351,11 @@ void digictl_mdraw(void *view, void *bmp)
         dg_wave2_page(bmp);
     else if (k == DN_PFKIND)
         dg_perf_page(bmp);
-    else if (k == DN_WASHKIND)
-        dg_wash_page(bmp);
-    else if (k == DN_RADKIND)
-        dg_radio_page(bmp);
-    else if (k == DN_DESKIND)
-        dg_destroy_page(bmp);
-    else if (k == DN_SPCKIND)
-        dg_space_page(bmp);
     else if (k == DN_DLYKIND)
         dg_delay_page(bmp);
-    if (dg_page_locked(k))
-        dg_macrobox(bmp);                     /* driven by a macro: locked */
-    else if (dg_page_off(k))
+    else if (k == DN_STUKIND)
+        toejam_draw(bmp);
+    if (dg_page_off(k))
         dg_offbox(bmp);                       /* section off: show OFF */
 }
 
@@ -1664,6 +1376,7 @@ void digictl_tick(void *ctrl)
             DN_INVALIDATE(dc_view);
         }
     } else if (dc_view && !dc_view_open(dc_view)) {
+        toejam_all_off();
         dc_vis = 0;                           /* the view is closed: disarm now */
     }
 }
@@ -1695,8 +1408,7 @@ int digictl_enc(void *brain, void *ev)
     k = cur_kind(dc_view);
     if (k != DN_FXKIND && k != DN_FEKIND && k != DN_EQKIND &&
         k != DN_CRKIND && k != DN_WVKIND && k != DN_WSKIND &&
-        k != DN_PFKIND && k != DN_DLYKIND &&
-        !(k >= DN_WASHKIND && k <= DN_SPCKIND))
+        k != DN_PFKIND && k != DN_DLYKIND && k != DN_STUKIND)
         return 0;
     if (!delta)
         return 1;
@@ -1706,6 +1418,8 @@ int digictl_enc(void *brain, void *ev)
     if (dc_func)
         d = (d > 0) ? 127 : -127;   /* FUNC + turn: snap the param to 100% / 0% */
 
+    if (k == DN_STUKIND)                 /* STUTTER: no knobs (it follows tempo) */
+        return 1;
     if (k == DN_FEKIND) {                /* FOLD: A on, D mode, E/F/G/H amount, LEVEL meter */
         switch (id) {
         case 1: digifold_on = (d > 0); break;
@@ -1763,24 +1477,13 @@ int digictl_enc(void *brain, void *ev)
         case 8: digiwave_fb = clampi(digiwave_fb + d, 0, 127); break;
         default: break;
         }
-    } else if (k >= DN_WASHKIND && k <= DN_SPCKIND) {   /* macros: A on/off, B..H amount */
-        int *po = mw_onp(k), *pa = mw_amtp(k);
-        if (id == 1)
-            *po = (d > 0);
-        else if (id >= 2 && id <= 8)
-            *pa = clampi(*pa + d, 0, 127);
-            dn_store_dirty = 1;                             /* persist with the pattern */
-    } else if (k == DN_DLYKIND) {        /* DELAYS: A on, D mode, B/C/E/F/G/H params */
-        if (id == 4) {                   /* D: switch WRMZ <-> GRAINZ */
-            digiwrmz_mode = digiwrmz_mode ? 0 : 1;
-        } else if (id == 1) {            /* A: on/off for the active mode */
-            *dgdly_onp() = (d > 0);
+    } else if (k == DN_DLYKIND) {        /* DELAYS: A on, B/C/E/F/G/H params */
+        if (id == 1) {                   /* A: on/off */
+            digiwrmz_on = (d > 0);
         } else {
             static const signed char so[9] = { -1, -1, 0, 1, -1, 2, 3, 4, 5 };
-            if (id >= 2 && id <= 8 && so[id] >= 0) {
-                int **a = digiwrmz_mode ? dgdly_grainz : dgdly_wrmz;
-                dgdly_set(so[id], *a[so[id]] + d);
-            }
+            if (id >= 2 && id <= 8 && so[id] >= 0)
+                dgdly_set(so[id], dgdly_wrmz[so[id]] + d);
         }
         dc_act_id = id;
         dc_act_kind = DN_DLYKIND;
@@ -1842,7 +1545,12 @@ int digictl_key(void *brain, void *ev)
         int t = id - DN_TRIG1;
         if (flags & 1) {
             if (flags & 8)
-                return (pf_taken & (1u << t)) ? 1 : 0;   /* swallow repeats */
+                return ((pf_taken & (1u << t)) || toejam_held(t)) ? 1 : 0;
+            if (k == DN_STUKIND && !(flags & DN_KF_FUNC) && !dc_mods) {
+                toejam_down(t);
+                DN_INVALIDATE(dc_view);
+                return 1;
+            }
             if (k == DN_PFKIND && !(flags & DN_KF_FUNC) && !dc_mods) {
                 pf_trig_down(t);
                 DN_INVALIDATE(dc_view);
@@ -1850,7 +1558,13 @@ int digictl_key(void *brain, void *ev)
             }
             return 0;
         }
-        if (pf_taken & (1u << t)) {                 /* our release */
+        if (toejam_held(t)) {                       /* our STUTTER release */
+            toejam_up(t);
+            if (k == DN_STUKIND)
+                DN_INVALIDATE(dc_view);
+            return 1;
+        }
+        if (pf_taken & (1u << t)) {                 /* our PERFORM release */
             pf_trig_up(t);
             if (k == DN_PFKIND)
                 DN_INVALIDATE(dc_view);
@@ -1859,8 +1573,8 @@ int digictl_key(void *brain, void *ev)
         return 0;
     }
 
-    /* UP / DOWN: from the FX tree to PERFORM + macros, and back to the FX page
-     * we came from (or FOLD). Either key toggles the macro tree (DT1). */
+    /* UP / DOWN: from the FX tree to PERFORM + STUTTER, and back to the FX page
+     * we came from (or FOLD). Either key toggles the PERFORM tree (DT1). */
     if ((id == DN_K_UP || id == DN_K_DOWN) &&
         (flags & 1) && !(flags & DN_KF_FUNC) && !(flags & 8)) {
         int i;
@@ -1869,7 +1583,7 @@ int digictl_key(void *brain, void *ev)
                 dc_perf_prev = *(int *)(dc_view + 144);   /* the FX page's index */
                 return dc_goto_idx(dc_view, dc_find_kind(dc_view, DN_PFKIND));
             }
-        for (i = 0; i < 5; i++)
+        for (i = 0; i < DN_TREE2_N; i++)
             if (dc_tree2[i] == k) {
                 int back = dc_perf_prev;
                 if (back < 0)
@@ -1884,9 +1598,9 @@ int digictl_key(void *brain, void *ev)
         return 0;
     {
         int buf[16], m, i, cur, idx = *(int *)(dc_view + 144);
-        for (i = 0; i < 5; i++)
-            if (dc_tree2[i] == k) {             /* inside the macro tree */
-                cur = (i + (id == DN_K_RIGHT ? 1 : 4)) % 5;
+        for (i = 0; i < DN_TREE2_N; i++)
+            if (dc_tree2[i] == k) {             /* inside the PERFORM tree */
+                cur = (i + (id == DN_K_RIGHT ? 1 : DN_TREE2_N - 1)) % DN_TREE2_N;
                 return dc_goto_idx(dc_view, dc_find_kind(dc_view, dc_tree2[cur]));
             }
         m = dc_main_list(dc_view, buf);         /* stock + FX, by index */

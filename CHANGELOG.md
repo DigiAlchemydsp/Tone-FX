@@ -1,5 +1,35 @@
 # Changelog
 
+## 4.3b — lite + TOEJAM (Digitone 1.44, Digitakt 1.54)
+
+Packages: `tonefx-4.3b-os1.44.elemod` (Digitone 1.44) and
+`tonefx-4.3b-os1.54.elemod` (Digitakt 1.54). Digitakt users also need the
+provided `core-4.0.1-os1.54.elemod`; Digitone users need `core-dn1` 4.1.
+
+- **TOEJAM STUTTER page** beside PERFORM: hold a trig to freeze and loop the
+  finished master mix at the selected tempo subdivision. Digitone ring is
+  stereo (~2.7 s); Digitakt ring is mono (~0.68 s).
+- **Footprint reduction:** removed the `WASH`, `RADIO`, `DESTROY` and `SPACE`
+  macro pages; removed the `BITS` crush mode; removed the `GRAINZ` delay mode.
+  PERFORM and STUTTER share the UP tree.
+- **CRUSH** is now `REDUX` / `CRUNCH`; **DELAYS** is `WRMZ` only.
+- **Per-pattern store** is `DGX4` v2 (32 params Digitakt, 35 Digitone); old v1
+  blocks are ignored and reclaimed.
+- **Digitakt core:** `core-4.0.1-os1.54` backports `fw_tempo` onto the
+  Tone+FX-compatible Digitakt core. It is included with the release.
+- Verified: `.run`/`.bss` 22,514/571,342 (DN), 20,352/104,300 (DT); lint and
+  patch are byte-exact. Emulator/hardware testing pending.
+
+## Unreleased — Digitakt per-pattern persistence
+
+- **Digitakt: the FX settings now save and reload with the pattern.** The
+  mod-owned RAM table (`dn_tab`) is gone; the 48 params are packed (`"DGX4"`)
+  into MIDI track 8's saved kit record (`kit + 0x8ba`, channel 16), which the
+  stock pattern serializer carries to the +Drive. They therefore survive a
+  pattern switch, a project load and a power cycle, like the Digitone's reserved
+  MIDI track. Reserve MIDI track 8 and leave its settings alone. Built and
+  linted/patched for OS 1.53 and 1.54; `.run` 23480, `.bss` 38888.
+
 ## 4.1a — core-dn1 4.1
 
 Packages: `core-dn1-4.1`, `tonefx-4.1a` (Digitone 1.43) and `tonefx-4.1a-os1.44`

@@ -21,6 +21,7 @@ void digiwave_stereo_render_out(void);
 void digiwrmz_render_out(void);
 void digictl_limit_out(void);
 void digimeter_render_out(void);
+void toejam_render_out(void);
 
 void tonefx_master(int *m)
 {
@@ -43,6 +44,7 @@ void tonefx_master(int *m)
     digiwave_stereo_render_out();  /* 63 */
     digictl_limit_out();        /* 64 */
     digimeter_render_out();     /* 65 */
+    toejam_render_out();        /* 66 */
     bx_macsr_restore(macsr);
     for (i = 0; i < 64; i++) {
         int d = tfx_blk[i] - (m[i] >> 8);
