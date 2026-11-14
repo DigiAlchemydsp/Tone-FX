@@ -1,5 +1,7 @@
 # Tone+FX 4.3b — lite
 
+[GitHub release v4.3b](https://github.com/DigiAlchemydsp/Tone-FX/releases/tag/v4.3b)
+
 **A master effect suite for the Elektron Digitone mk1 / Digitone Keys (OS 1.44) and the Digitakt mk1 (OS 1.54), now with the TOEJAM stutter page.**
 
 Tone+FX 4.3b is a set of [elekloader](https://github.com/irpina/elekloader) mods

@@ -1,8 +1,9 @@
-# Per-pattern storage for the DIGI FX params (digictl 2.9)
+# Per-pattern storage for the DIGI FX params (4.3b)
 
-Status: **Digitone: one reserved MIDI track (channel 16), packed. Digitakt: a
-mod-owned RAM table.** MIDI tracks 1-3 (channels 1-15) and the synth tracks are
-never touched.
+Status: **Digitone: one reserved MIDI track (channel 16), packed. Digitakt: one
+reserved MIDI track (channel 16), packed, in the kit record the pattern
+serializer saves.** MIDI tracks 1-3 on the Digitone (channels 1-15) and the
+synth tracks are never touched.
 
 ## Why not the old blocks (channels 1-3)
 
@@ -24,28 +25,43 @@ Reserve that track on **MIDI channel 16** and leave it alone. The store writes
 only `pattern + 0x1BB0`; the other three MIDI-track blocks and every synth track
 are untouched, so channels 1-15 are unaffected.
 
-The 51 params are **packed** (1-7 bits each, `dn_stbits`) into the block:
+The 35 params are **packed** (1-7 bits each, `dn_stbits`) into the block:
 
 ```
 +0..3   "DGX4" magic
-+4      version (1)
-+5..6   count (51)
++4      version (2)
++5..6   count (35)
 +7..    bitstream, little-endian, 1-7 bits per param
 ```
 
-260 bits -> 33 bytes + 7-byte header = 40 of the 64 bytes; the tail is cleared.
+204 bits -> 26 bytes + 7-byte header = 33 of the 64 bytes; the tail is cleared.
 
 `ev_tick` runs `dn_store_sync()`: on a pattern switch it loads a block carrying
 `"DGX4"` (or adopts the live values for a fresh pattern); a page/CC edit writes
 the globals into the block; a block whose magic is gone (a stock write) is
 reclaimed instead of read. The old blocks at `+0x1040/+0x1410/+0x17E0` are never
-read or written again.
+read or written again. 4.3b bumps the store to **v2**; v1 blocks are ignored and
+reclaimed, so settings return to defaults once after upgrading.
 
 ## Digitakt port
 
-The DT1 has no equivalent MIDI-track block; its store stays a **mod-owned RAM
-table** (`dn_tab[128][48]` in `.bss`, keyed by `*0x4199dc44`). RAM-only, no stock
-memory read or written, and no conflict with the kit spare that other mods use.
+The DT1 has the same idea in its kit: eight MIDI-track records at
+`kit + 0x59a + t*0x70` (0x6c bytes each), which the stock pattern serializer
+copies to the +Drive and back (`0x4007a300` -> `0x40079d22` on save,
+`0x40079f86` -> `0x40079cc2` on load). Reserve **MIDI track 8 on channel 16**
+and use its record:
+
+```
+record 7 -> kit + 0x59a + 7*0x70 = kit + 0x8aa
+store at record + 0x10 .. + 0x51 (the first 41 words the serializer carries)
+```
+
+The store starts 0x10 bytes in, past the byte the loader remaps at +8, and is
+packed `"DGX4"` v2 (32 params, 170 bits -> 22 bytes + header). It therefore survives a
+pattern switch, a project load and a power cycle, and it does not touch the
+sound records that Digi Matrix / Digi Poly / Digi EQ use (`kitstore.h`). A
+stock MIDI-track write removes the magic and is reclaimed from the live values;
+a genuine pattern record is adopted. The old RAM table (`dn_tab`) is gone.
 
 ## The PERFORM page momentary pads
 
@@ -61,5 +77,7 @@ so the pattern value is always the resting position. Pad state lives in plain
   `+0x1040/+0x1410/+0x17E0` carry no magic and stay clean; `+0x1BB0` carries
   `"DGX4"`; an edit is saved; a value set on one pattern does not leak to
   another; a return reloads it.
-- **Digitakt `dt1-4.0a`**: a param edit lands in `dn_tab[slot]`; the kit spare at
-  `+0x530` is untouched.
+- **Digitakt `dt1-4.0a`** (before this change): a param edit landed in
+  `dn_tab[slot]`; the kit spare at `+0x530` was untouched. The record-based store
+  is built and lints/patches for 1.53 and 1.54; re-run `tests/digiemu_tonefx.py`
+  (the `STORE_ONLY=1` plan) on a patched-Unicorn digiemu checkout to verify it.
